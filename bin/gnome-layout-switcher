@@ -2,7 +2,26 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
+import subprocess
 
+layout = 'gnome'
+
+def set_layout():
+    if layout == 'manjaro':
+        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
+    'echo foo']
+    elif layout == 'win':
+        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+    'echo foo']
+    elif layout == 'mac':
+        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
+    'echo foo']
+    elif layout == 'gnome':
+        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
+    'echo foo']
+
+    for cmd in cmds:
+        subprocess.run(cmd, shell=True)
 class HeaderBarWindow(Gtk.Window):
         
     def __init__(self):
@@ -30,34 +49,34 @@ class HeaderBarWindow(Gtk.Window):
         radiobox.set_hexpand(True)
 
         button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Manjaro Layout")
-        button1.connect("toggled", self.on_button_toggled, "Manjaro")
+        button1.connect("toggled", self.on_button_toggled, "manjaro")
         radiobox.attach(button1, 1, 0, 1, 1)
         preview_manjaro = Gtk.Image()
-        preview_manjaro.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/manjaropreview.png')
+        preview_manjaro.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/manjaropreview.png')
         radiobox.attach(preview_manjaro, 1, 1, 1, 1)
 
         button2 = Gtk.RadioButton.new_from_widget(button1)
         button2.set_label("Windows Layout")
-        button2.connect("toggled", self.on_button_toggled, "Windows")
+        button2.connect("toggled", self.on_button_toggled, "win")
         radiobox.attach(button2, 2, 0, 1, 1)
         preview_win = Gtk.Image()
-        preview_win.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/winpreview.png')
+        preview_win.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/winpreview.png')
         radiobox.attach(preview_win, 2, 1, 1, 1)
 
         button3 = Gtk.RadioButton.new_from_widget(button1)
         button3.set_label("MacOs Layout")
-        button3.connect("toggled", self.on_button_toggled, "MacOs")
+        button3.connect("toggled", self.on_button_toggled, "mac")
         radiobox.attach(button3, 1, 3, 1, 1)
         preview_mac = Gtk.Image()
-        preview_mac.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/macpreview.png')
+        preview_mac.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/macpreview.png')
         radiobox.attach(preview_mac, 1, 4, 1, 1)
 
         button4 = Gtk.RadioButton.new_from_widget(button1)
         button4.set_label("Gnome Layout")
-        button4.connect("toggled", self.on_button_toggled, "Gnome")
+        button4.connect("toggled", self.on_button_toggled, "gnome")
         radiobox.attach(button4, 2, 3, 1, 1)
         preview_gnome = Gtk.Image()
-        preview_gnome.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/gnomepreview.png')
+        preview_gnome.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/gnomepreview.png')
         radiobox.attach(preview_gnome, 2, 4, 1, 1)
         radiobox.props.halign = Gtk.Align.CENTER
 
@@ -86,12 +105,15 @@ class HeaderBarWindow(Gtk.Window):
     def on_button_toggled(self, button, name):
         if button.get_active():
             state = "on"
+            layout = name
+            print(layout)
         else:
             state = "off"
         print("Button", name, "was turned", state)
 
     def on_click_me_clicked(self, button):
         print("\"Apply\" button was clicked")
+        set_layout()
 
 
 # Show the window        
