@@ -8,16 +8,16 @@ class HeaderBarWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Gnome Layout Switcher")
         self.set_border_width(10)
-        #self.set_default_size(300, 300)
+        # self.set_default_size(300, 300)
 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.props.title = "Layout Switcher"
         self.set_titlebar(hb)
         
-        vbox = Gtk.Grid(row_homogeneous=False,column_homogeneous=False,row_spacing=10)
+        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=10)
         self.add(vbox)
-# Stack settings
+        # Stack settings
         stack = Gtk.Stack()
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         stack.set_transition_duration(300)
@@ -25,33 +25,41 @@ class HeaderBarWindow(Gtk.Window):
         stack.set_vhomogeneous(False)
         stack.set_vexpand(True)
 
-# Radiomenu
-        radiobox = Gtk.Grid()
+        # Radiomenu
+        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=40, margin_right=40, margin_bottom=30)
         radiobox.set_hexpand(True)
 
         button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Manjaro Layout")
         button1.connect("toggled", self.on_button_toggled, "Manjaro")
         radiobox.attach(button1, 1, 0, 1, 1)
+        preview_manjaro = Gtk.Image()
+        preview_manjaro.set_from_file('/home/matti/.bin/preview.png')
+        radiobox.attach(preview_manjaro, 1, 1, 1, 1)
 
         button2 = Gtk.RadioButton.new_from_widget(button1)
         button2.set_label("Windows Layout")
         button2.connect("toggled", self.on_button_toggled, "Windows")
-        radiobox.attach(button2, 1, 1, 1, 1)
+        radiobox.attach(button2, 2, 0, 1, 1)
+        preview_win = Gtk.Image()
+        preview_win.set_from_file('/home/matti/.bin/preview.png')
+        radiobox.attach(preview_win, 2, 1, 1, 1)
 
         button3 = Gtk.RadioButton.new_from_widget(button1)
         button3.set_label("MacOs Layout")
         button3.connect("toggled", self.on_button_toggled, "MacOs")
-        radiobox.attach(button3, 1, 2, 1, 1)
-        
+        radiobox.attach(button3, 1, 3, 1, 1)
+        preview_mac = Gtk.Image()
+        preview_mac.set_from_file('/home/matti/.bin/preview.png')
+        radiobox.attach(preview_mac, 1, 4, 1, 1)
+
         button4 = Gtk.RadioButton.new_from_widget(button1)
         button4.set_label("Gnome Layout")
         button4.connect("toggled", self.on_button_toggled, "Gnome")
-        radiobox.attach(button4, 1, 3, 1, 1)
-        
-        button5 = Gtk.RadioButton.new_from_widget(button1)
-        button5.set_label("Ubuntu Layout")
-        button5.connect("toggled", self.on_button_toggled, "Ubuntu")
-        radiobox.attach(button5, 1, 4, 1, 1)
+        radiobox.attach(button4, 2, 3, 1, 1)
+        preview_gnome = Gtk.Image()
+        preview_gnome.set_from_file('/home/matti/.bin/preview.png')
+        radiobox.attach(preview_gnome, 2, 4, 1, 1)
+        radiobox.props.halign = Gtk.Align.CENTER
 
         stack.add_titled(radiobox, "radiobox", "Layout")
         stack_switcher = Gtk.StackSwitcher()
@@ -59,25 +67,22 @@ class HeaderBarWindow(Gtk.Window):
         stack_switcher.set_hexpand(True)
         stack_switcher.props.halign = Gtk.Align.CENTER
 
-# The theme tab
+        # The theme tab
         label = Gtk.Label()
         label.set_markup("<big>\n\nTheme setings\n\n\n</big>")
         stack.add_titled(label, "label", "Theme")
 
-# Preview image
-        preview = Gtk.Image()
-        preview.set_from_file('/home/matti/.bin/preview.png')
-        radiobox.attach(preview, 2, 0, 1, 4)
+        # Preview images
 
-# A button to apply the settings
+        # A button to apply the settings
         applybutton = Gtk.Button.new_with_label("Apply")
         applybutton.connect("clicked", self.on_click_me_clicked)
-# Pack everything to a box
+        # Pack everything to a box
         vbox.attach(stack_switcher, 1, 0, 1, 1)
         vbox.attach(stack,  1, 1, 1, 3)
         vbox.attach(applybutton, 1, 4, 1, 1)
 
-# Placeholder functions for buttons
+    # Placeholder functions for buttons
     def on_button_toggled(self, button, name):
         if button.get_active():
             state = "on"
