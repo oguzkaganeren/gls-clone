@@ -26,14 +26,14 @@ class HeaderBarWindow(Gtk.Window):
         stack.set_vexpand(True)
 
         # Radiomenu
-        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=40, margin_right=40, margin_bottom=30)
+        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=40, margin_right=40, margin_bottom=30, margin_top=10)
         radiobox.set_hexpand(True)
 
         button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Manjaro Layout")
         button1.connect("toggled", self.on_button_toggled, "Manjaro")
         radiobox.attach(button1, 1, 0, 1, 1)
         preview_manjaro = Gtk.Image()
-        preview_manjaro.set_from_file('/home/matti/.bin/preview.png')
+        preview_manjaro.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/manjaropreview.png')
         radiobox.attach(preview_manjaro, 1, 1, 1, 1)
 
         button2 = Gtk.RadioButton.new_from_widget(button1)
@@ -41,7 +41,7 @@ class HeaderBarWindow(Gtk.Window):
         button2.connect("toggled", self.on_button_toggled, "Windows")
         radiobox.attach(button2, 2, 0, 1, 1)
         preview_win = Gtk.Image()
-        preview_win.set_from_file('/home/matti/.bin/preview.png')
+        preview_win.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/winpreview.png')
         radiobox.attach(preview_win, 2, 1, 1, 1)
 
         button3 = Gtk.RadioButton.new_from_widget(button1)
@@ -49,7 +49,7 @@ class HeaderBarWindow(Gtk.Window):
         button3.connect("toggled", self.on_button_toggled, "MacOs")
         radiobox.attach(button3, 1, 3, 1, 1)
         preview_mac = Gtk.Image()
-        preview_mac.set_from_file('/home/matti/.bin/preview.png')
+        preview_mac.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/macpreview.png')
         radiobox.attach(preview_mac, 1, 4, 1, 1)
 
         button4 = Gtk.RadioButton.new_from_widget(button1)
@@ -57,7 +57,7 @@ class HeaderBarWindow(Gtk.Window):
         button4.connect("toggled", self.on_button_toggled, "Gnome")
         radiobox.attach(button4, 2, 3, 1, 1)
         preview_gnome = Gtk.Image()
-        preview_gnome.set_from_file('/home/matti/.bin/preview.png')
+        preview_gnome.set_from_file('/home/matti/git/lab/gnome-layout-switcher/data/pictures/gnomepreview.png')
         radiobox.attach(preview_gnome, 2, 4, 1, 1)
         radiobox.props.halign = Gtk.Align.CENTER
 
