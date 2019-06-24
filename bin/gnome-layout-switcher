@@ -4,27 +4,11 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 import subprocess
 
-layout = 'gnome'
 
-def set_layout():
-    if layout == 'manjaro':
-        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
-    'echo foo']
-    elif layout == 'win':
-        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
-    'echo foo']
-    elif layout == 'mac':
-        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
-    'echo foo']
-    elif layout == 'gnome':
-        cmds=['gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
-    'echo foo']
-
-    for cmd in cmds:
-        subprocess.run(cmd, shell=True)
 class HeaderBarWindow(Gtk.Window):
         
     def __init__(self):
+        self.layout = 'manjaro'
         Gtk.Window.__init__(self, title="Gnome Layout Switcher")
         self.set_border_width(10)
         # self.set_default_size(300, 300)
@@ -47,6 +31,7 @@ class HeaderBarWindow(Gtk.Window):
         # Radiomenu
         radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=40, margin_right=40, margin_bottom=30, margin_top=10)
         radiobox.set_hexpand(True)
+        radiobox.props.halign = Gtk.Align.CENTER
 
         button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Manjaro Layout")
         button1.connect("toggled", self.on_button_toggled, "manjaro")
@@ -78,7 +63,8 @@ class HeaderBarWindow(Gtk.Window):
         preview_gnome = Gtk.Image()
         preview_gnome.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/gnomepreview.png')
         radiobox.attach(preview_gnome, 2, 4, 1, 1)
-        radiobox.props.halign = Gtk.Align.CENTER
+
+
 
         stack.add_titled(radiobox, "radiobox", "Layout")
         stack_switcher = Gtk.StackSwitcher()
@@ -105,15 +91,39 @@ class HeaderBarWindow(Gtk.Window):
     def on_button_toggled(self, button, name):
         if button.get_active():
             state = "on"
-            layout = name
-            print(layout)
+            self.layout = name
         else:
             state = "off"
         print("Button", name, "was turned", state)
 
+
     def on_click_me_clicked(self, button):
         print("\"Apply\" button was clicked")
-        set_layout()
+        layout = self.layout
+        print(layout)
+        if layout == 'manjaro':
+            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT'],
+                ['gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true'],
+                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true'],
+                ['gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"'],
+                ['gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"']]
+        elif layout == 'win':
+            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+        'echo foo']
+        elif layout == 'mac':
+            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
+                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM'],
+                ['gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false'],
+                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false'],
+                ['gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"'],
+                ['gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "']]
+        elif layout == 'gnome':
+            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
+        'echo foo']
+        for cmd in cmds:
+            subprocess.run(cmd, shell=True)
+
 
 
 # Show the window        
