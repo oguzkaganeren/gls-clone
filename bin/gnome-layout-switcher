@@ -5,10 +5,10 @@ from gi.repository import Gtk, Gio
 import subprocess
 
 layouts = [
-    { 'id':'manjaro', 'label':'Manjaro look', 'x':1, 'y':0},
-    { 'id':'win', 'label':'Windows style', 'x':2, 'y':0},
-    { 'id':'mac', 'label':'MacOs layout', 'x':1, 'y':3},
-    { 'id':'gnome', 'label':'Gnome apparence', 'x':2, 'y':3},
+    { 'id':'manjaro', 'label':'Manjaro', 'x':1, 'y':0},
+    { 'id':'win', 'label':'Windows', 'x':2, 'y':0},
+    { 'id':'mac', 'label':'MacOs', 'x':1, 'y':3},
+    { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
 ]
 
 
@@ -51,7 +51,7 @@ class HeaderBarWindow(Gtk.Window):
 
         # The theme tab
         label = Gtk.Label()
-        label.set_markup("<big>\n\nTheme setings\n\n\n</big>")
+        label.set_markup("<big>\n\nTheme settings\n\n\n</big>")
         stack.add_titled(label, "label", "Theme")
 
         # A button to apply the settings
