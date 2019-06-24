@@ -4,6 +4,13 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 import subprocess
 
+layouts = [
+    { 'id':'manjaro', 'label':'Manjaro look', 'x':1, 'y':0},
+    { 'id':'win', 'label':'Windows style', 'x':2, 'y':0},
+    { 'id':'mac', 'label':'MacOs layout', 'x':1, 'y':3},
+    { 'id':'gnome', 'label':'Gnome apparence', 'x':2, 'y':3},
+]
+
 
 class HeaderBarWindow(Gtk.Window):
         
@@ -32,39 +39,9 @@ class HeaderBarWindow(Gtk.Window):
         radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=40, margin_right=40, margin_bottom=30, margin_top=10)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
-
-        button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Manjaro Layout")
-        button1.connect("toggled", self.on_button_toggled, "manjaro")
-        radiobox.attach(button1, 1, 0, 1, 1)
-        preview_manjaro = Gtk.Image()
-        preview_manjaro.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/manjaropreview.png')
-        radiobox.attach(preview_manjaro, 1, 1, 1, 1)
-
-        button2 = Gtk.RadioButton.new_from_widget(button1)
-        button2.set_label("Windows Layout")
-        button2.connect("toggled", self.on_button_toggled, "win")
-        radiobox.attach(button2, 2, 0, 1, 1)
-        preview_win = Gtk.Image()
-        preview_win.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/winpreview.png')
-        radiobox.attach(preview_win, 2, 1, 1, 1)
-
-        button3 = Gtk.RadioButton.new_from_widget(button1)
-        button3.set_label("MacOs Layout")
-        button3.connect("toggled", self.on_button_toggled, "mac")
-        radiobox.attach(button3, 1, 3, 1, 1)
-        preview_mac = Gtk.Image()
-        preview_mac.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/macpreview.png')
-        radiobox.attach(preview_mac, 1, 4, 1, 1)
-
-        button4 = Gtk.RadioButton.new_from_widget(button1)
-        button4.set_label("Gnome Layout")
-        button4.connect("toggled", self.on_button_toggled, "gnome")
-        radiobox.attach(button4, 2, 3, 1, 1)
-        preview_gnome = Gtk.Image()
-        preview_gnome.set_from_file('/home/manj/git/lab/gnome-layout-switcher/data/pictures/gnomepreview.png')
-        radiobox.attach(preview_gnome, 2, 4, 1, 1)
-
-
+        self.btn_layout_first = None
+        for layout in layouts:
+            self.create_layout_btn(layout=layout , the_grid=radiobox)
 
         stack.add_titled(radiobox, "radiobox", "Layout")
         stack_switcher = Gtk.StackSwitcher()
@@ -77,8 +54,6 @@ class HeaderBarWindow(Gtk.Window):
         label.set_markup("<big>\n\nTheme setings\n\n\n</big>")
         stack.add_titled(label, "label", "Theme")
 
-        # Preview images
-
         # A button to apply the settings
         applybutton = Gtk.Button.new_with_label("Apply")
         applybutton.connect("clicked", self.on_click_me_clicked)
@@ -86,15 +61,38 @@ class HeaderBarWindow(Gtk.Window):
         vbox.attach(stack_switcher, 1, 0, 1, 1)
         vbox.attach(stack,  1, 1, 1, 3)
         vbox.attach(applybutton, 1, 4, 1, 1)
-
-    # Placeholder functions for buttons
-    def on_button_toggled(self, button, name):
-        if button.get_active():
-            state = "on"
-            self.layout = name
+    # Create the desktop grid
+    def create_layout_btn(self, layout, the_grid):
+        btn = Gtk.RadioButton.new_with_label_from_widget(self.btn_layout_first, layout['label'])
+        if not self.btn_layout_first:
+            self.btn_layout_first = btn
+        btn.connect("toggled", self.on_button_toggled, layout['id'])
+        the_grid.attach(btn, layout['x'], layout['y'], 1, 1)
+        preview_img = Gtk.Image()
+        preview_img.set_from_file(f"/usr/share/gls/pictures/{layout['id']}preview.png")
+        btn.image = preview_img  # link img to checkbox for easy find
+        if btn.get_active():
+            preview_img.set_opacity(1)
         else:
-            state = "off"
-        print("Button", name, "was turned", state)
+            preview_img.set_opacity(0.65)
+        event_img = Gtk.EventBox()
+        event_img.connect("button-release-event",self.on_click_img)  # click in box
+        event_img.add(preview_img)    # add img in box
+        event_img.btn = btn    # link btn to box for easy find
+        the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
+
+    def on_button_toggled(self, button, name):
+        state = 0.45
+        if button.get_active():
+            state = 1
+            self.layout = name
+            print('active layout:', self.layout)
+
+        button.image.set_opacity(state)    # change img opacity from state
+        print("Button", name, "was turned", state == 1)
+    # Make images clickable
+    def on_click_img(self, box, event):
+        box.btn.set_active(True) # change checkbox state and call on_button_toggled()
 
 
     def on_click_me_clicked(self, button):
