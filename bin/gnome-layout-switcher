@@ -71,10 +71,12 @@ class HeaderBarWindow(Gtk.Window):
         preview_img = Gtk.Image()
         preview_img.set_from_file(f"/usr/share/gls/pictures/{layout['id']}preview.png")
         btn.image = preview_img  # link img to checkbox for easy find
+        # reduce opacity of de-selected previews
         if btn.get_active():
             preview_img.set_opacity(1)
         else:
             preview_img.set_opacity(0.65)
+        # make preview images clickable
         event_img = Gtk.EventBox()
         event_img.connect("button-release-event",self.on_click_img)  # click in box
         event_img.add(preview_img)    # add img in box
@@ -89,38 +91,41 @@ class HeaderBarWindow(Gtk.Window):
             print('active layout:', self.layout)
 
         button.image.set_opacity(state)    # change img opacity from state
-        print("Button", name, "was turned", state == 1)
+        
     # Make images clickable
     def on_click_img(self, box, event):
         box.btn.set_active(True) # change checkbox state and call on_button_toggled()
 
 
     def on_click_me_clicked(self, button):
-        print("\"Apply\" button was clicked")
         layout = self.layout
-        print(layout)
         if layout == 'manjaro':
             cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
-                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT'],
-                ['gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true'],
-                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true'],
-                ['gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"'],
-                ['gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"']]
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
+                'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
+                'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"']
         elif layout == 'win':
             cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
-        'echo foo']
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
+                'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
+                'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"']
         elif layout == 'mac':
-            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
-                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM'],
-                ['gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false'],
-                ['gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false'],
-                ['gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"'],
-                ['gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "']]
+            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"']
         elif layout == 'gnome':
             cmds=['gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
-        'echo foo']
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"']
         for cmd in cmds:
             subprocess.run(cmd, shell=True)
+        print("Layout applied")
+        
 
 
 
