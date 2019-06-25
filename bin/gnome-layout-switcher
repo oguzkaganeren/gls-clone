@@ -96,33 +96,38 @@ class HeaderBarWindow(Gtk.Window):
     def on_click_img(self, box, event):
         box.btn.set_active(True) # change checkbox state and call on_button_toggled()
 
-
     def on_click_me_clicked(self, button):
-        layout = self.layout
-        if layout == 'manjaro':
-            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+        commands = {
+            'manjaro': [
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"']
-        elif layout == 'win':
-            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
+            ],
+            'win': [
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"']
-        elif layout == 'mac':
-            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+            ],
+            'mac' : [
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"']
-        elif layout == 'gnome':
-            cmds=['gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"']
-        for cmd in cmds:
+                'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"'
+            ],
+            'gnome' : [
+                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+            ]
+        }
+
+        for cmd in commands.get(self.layout, ""):
             subprocess.run(cmd, shell=True)
         print("Layout applied")
         
