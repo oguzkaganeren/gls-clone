@@ -11,7 +11,6 @@ layouts = [
     { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
 ]
 
-
 class HeaderBarWindow(Gtk.Window):
         
     def __init__(self):
@@ -65,24 +64,24 @@ class HeaderBarWindow(Gtk.Window):
 
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
-        manjaro_switch.connect("notify::active", self.on_branding_activated)
-        branding_enabled = subprocess.run('pacman -Qq manjaro-gnome-assets', shell=True)
+        branding_enabled = subprocess.run('pacman -Qq manjaro-gnome-assets &>/dev/null', shell=True)
         if branding_enabled.returncode == 0:
             manjaro_switch.set_active(True)
         else:
             manjaro_switch.set_active(False)
+        manjaro_switch.connect("notify::active", self.on_branding_activated)
         manjaro_label = Gtk.Label()
         manjaro_label.set_markup("        Manjaro branding")
         manjaro_label.props.halign = Gtk.Align.START
 
         # wayland toggle
         wayland_switch = Gtk.Switch()
-        wayland_switch.connect("notify::active", self.on_wayland_activated)
         wayland_enabled = subprocess.run('grep -q "^WaylandEnable=false" /etc/gdm/custom.conf', shell=True)
         if wayland_enabled.returncode == 1:
             wayland_switch.set_active(True)
         else:
             wayland_switch.set_active(False)
+        wayland_switch.connect("notify::active", self.on_wayland_activated)
         wayland_label = Gtk.Label()
         wayland_label.set_markup("        Wayland session")
         wayland_label.props.halign = Gtk.Align.START
@@ -149,10 +148,10 @@ class HeaderBarWindow(Gtk.Window):
             state = 1
             self.layout = name
             print('active layout:', self.layout)
+        button.image.set_opacity(state)    # change img opacity from state
     def on_color_chosen(self, user_data):
         print("You chose the color: " + self.button.get_rgba().to_string())
 
-        button.image.set_opacity(state)    # change img opacity from state
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
