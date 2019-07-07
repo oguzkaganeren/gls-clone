@@ -3,6 +3,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, Gdk
 import subprocess
+from shutil import copyfile
+import os
+import re
 
 layouts = [
     { 'id':'manjaro', 'label':'Manjaro', 'x':1, 'y':0},
@@ -10,6 +13,46 @@ layouts = [
     { 'id':'mac', 'label':'MacOs', 'x':1, 'y':3},
     { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
 ]
+
+def rm_brand():
+    commands = ['pkexec pacman --noconfirm -R manjaro-gnome-assets manjaro-gdm-branding',
+    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css.bak']
+    for cmd in commands:
+        subprocess.run(cmd, shell=True)
+
+def rebrand():
+    commands = ['pkexec pacman --noconfirm -S manjaro-gnome-assets manjaro-gdm-branding',
+    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css']
+    for cmd in commands:
+        subprocess.run(cmd, shell=True)
+
+def enable_wayland():
+    commands = ['pkexec sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf']
+    for cmd in commands:
+        subprocess.run(cmd, shell=True)
+
+def disable_wayland():
+    commands = ['pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf']
+    for cmd in commands:
+        subprocess.run(cmd, shell=True)
+
+def set_highlight_color(new_color):
+    # Define the path to css file
+    css_file = os.path.expanduser('~/.config/gtk-3.0/gtk.css')
+    # If not present, copy the file from default
+    if not os.path.isfile(css_file):
+        copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
+    # Find the current highlight color
+    with open(css_file) as f:
+        first_line = f.readline().strip()
+        current_color = re.search("#(.*);", first_line)
+        current_color = current_color.group(0)[:-1]
+    # Replace the old color with new one 
+    with open(css_file) as f:
+        newText=f.read().replace(current_color, new_color, 2)
+    # Write the changes
+    with open(css_file, "w") as f:
+        f.write(newText)
 
 class HeaderBarWindow(Gtk.Window):
         
@@ -93,18 +136,18 @@ class HeaderBarWindow(Gtk.Window):
         theme_label.props.halign = Gtk.Align.START
 
         # Color picker
-        color_button = Gtk.ColorButton()
+        self.color_button = Gtk.ColorButton()
         # with a default color (blue, in this instance)
         color = Gdk.RGBA()
         color.parse('#16A085')
         color.to_string()
-        color_button.set_rgba(color)
+        self.color_button.set_rgba(color)
 
         color_label = Gtk.Label()
         color_label.set_markup("        Application highlight color")
         color_label.props.halign = Gtk.Align.START
         # choosing a color in the dialogue window emits a signal
-        color_button.connect("color-set", self.on_color_chosen)
+        self.color_button.connect("color-set", self.on_color_chosen)
 
         # Theme tab layout
         theme_grid.attach(theme_button, 1, 0, 1, 1)
@@ -113,7 +156,7 @@ class HeaderBarWindow(Gtk.Window):
         theme_grid.attach(manjaro_label, 3, 1, 2, 1)
         theme_grid.attach(wayland_switch, 1, 2, 1, 1)
         theme_grid.attach(wayland_label, 3, 2, 2, 1)
-        theme_grid.attach(color_button, 1, 3, 1, 1)
+        theme_grid.attach(self.color_button, 1, 3, 1, 1)
         theme_grid.attach(color_label, 3, 3, 2, 1)
 
         # Pack everything to a box
@@ -150,20 +193,29 @@ class HeaderBarWindow(Gtk.Window):
             print('active layout:', self.layout)
         button.image.set_opacity(state)    # change img opacity from state
     def on_color_chosen(self, user_data):
-        print("You chose the color: " + self.button.get_rgba().to_string())
-
+        col = self.color_button.get_rgba().to_string()[4:-1:]
+        # convert color to hexadecimal
+        col = col.split(',')
+        col = ( int(x) for x in col )
+        col = '#%02x%02x%02x' % tuple(col)
+        set_highlight_color(col)
+        
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
+            enable_wayland()
         else:
             state = "off"
+            disable_wayland()
         print("Wayland was turned", state)
 
     def on_branding_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
+            rebrand()
         else:
             state = "off"
+            rm_brand()
         print("Branding was turned", state)
 
     def on_button_activated(self, button):
