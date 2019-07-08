@@ -7,6 +7,9 @@ from shutil import copyfile
 import os
 import re
 
+# Define the path to css file
+css_file = os.path.expanduser('~/.config/gtk-3.0/gtk.css')
+
 layouts = [
     { 'id':'manjaro', 'label':'Manjaro', 'x':1, 'y':0},
     { 'id':'win', 'label':'Windows', 'x':2, 'y':0},
@@ -37,17 +40,15 @@ def disable_wayland():
         subprocess.run(cmd, shell=True)
 
 def set_highlight_color(new_color):
-    # Define the path to css file
-    css_file = os.path.expanduser('~/.config/gtk-3.0/gtk.css')
     # If not present, copy the file from default
     if not os.path.isfile(css_file):
         copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
     # Find the current highlight color
     with open(css_file) as f:
-        first_line = f.readline().strip()
-        current_color = re.search("#(.*);", first_line)
-        current_color = current_color.group(0)[:-1]
-    # Replace the old color with new one 
+        file = f.read()
+        current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
+        current_color = current_color.group(0)[38:-1]
+        # Replace the old color with new one
     with open(css_file) as f:
         newText=f.read().replace(current_color, new_color, 2)
     # Write the changes
@@ -138,8 +139,12 @@ class HeaderBarWindow(Gtk.Window):
         # Color picker
         self.color_button = Gtk.ColorButton()
         # with a default color (blue, in this instance)
+        with open(css_file) as f:
+            file = f.read()
+            current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
+            current_color = current_color.group(0)[38:-1]
         color = Gdk.RGBA()
-        color.parse('#16A085')
+        color.parse(current_color)
         color.to_string()
         self.color_button.set_rgba(color)
 
