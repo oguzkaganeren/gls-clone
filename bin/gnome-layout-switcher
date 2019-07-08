@@ -10,7 +10,10 @@ import re
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
 
-
+class Opacity:
+    TOP = 1
+    MIDDLE = 0.70
+    LOW = 0.45
 
 layouts = [
     { 'id':'manjaro', 'label':'Manjaro', 'x':1, 'y':0},
@@ -190,18 +193,29 @@ class HeaderBarWindow(Gtk.Window):
         # make preview images clickable
         event_img = Gtk.EventBox()
         event_img.connect("button-release-event",self.on_click_img)  # click in box
+        event_img.connect("enter-notify-event",self.on_over_img, True)  # mouse over box
+        event_img.connect("leave-notify-event",self.on_over_img, False)  # mouse out box
         event_img.add(preview_img)    # add img in box
         event_img.btn = btn    # link btn to box for easy find
         the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
 
     # placeholder functions
     def on_button_toggled(self, button, name):
-        state = 0.45
+        state = Opacity.LOW
         if button.get_active():
-            state = 1
+            state = Opacity.TOP
             self.layout = name
             print('active layout:', self.layout)
         button.image.set_opacity(state)    # change img opacity from state
+    def on_over_img(self, box, event, isOverImage):
+        """on mouse over / out : change opacity"""
+        if box.btn.get_active():
+            return
+        if isOverImage:
+            box.btn.image.set_opacity(Opacity.MIDDLE)
+        else:
+            box.btn.image.set_opacity(Opacity.LOW)
+
     def on_color_chosen(self, user_data):
         col = self.color_button.get_rgba().to_string()[4:-1:]
         # convert color to hexadecimal
