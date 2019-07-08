@@ -18,13 +18,13 @@ layouts = [
 ]
 
 def rm_brand():
-    commands = ['pkexec pacman --noconfirm -R manjaro-gnome-assets manjaro-gdm-branding',
+    commands = ['pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
     'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css.bak']
     for cmd in commands:
         subprocess.run(cmd, shell=True)
 
 def rebrand():
-    commands = ['pkexec pacman --noconfirm -S manjaro-gnome-assets manjaro-gdm-branding',
+    commands = ['pamac-installer manjaro-gnome-assets manjaro-gdm-branding',
     'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css']
     for cmd in commands:
         subprocess.run(cmd, shell=True)
