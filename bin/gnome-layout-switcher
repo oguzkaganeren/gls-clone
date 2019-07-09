@@ -47,11 +47,11 @@ class Backend:
         """ generic shell call
             :return tuple (code, stdout, stderr)
         """
-        proc = subprocess.run(command, shell=True, capture_output=True)
+        proc = subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
         print("\n :: execute returncode:", proc.returncode)
-        print(" :: execute out:", proc.stdout.decode())
-        print(" :: execute err:", proc.stderr.decode(), "\n")
-        return proc.returncode, proc.stdout.decode(), proc.stderr.decode()
+        print(" :: execute out:", proc.stdout)
+        print(" :: execute err:", proc.stderr, "\n")
+        return proc.returncode, proc.stdout, proc.stderr
 
     def run(self, **kwargs):
         """ subprocess.run() """
@@ -123,7 +123,7 @@ class BackendWayland(Backend):
         super().check(**kwargs)
         print("BackendWayland.check()")
         if not Path(self.file_config).exists():
-            pass    
+            pass
             #return 99 # TODO un-comment use it
 
         print('check kwargs: ', kwargs)
