@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, Gdk
@@ -21,6 +23,131 @@ layouts = [
     { 'id':'mac', 'label':'MacOs', 'x':1, 'y':3},
     { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
 ]
+
+class Backend:
+    admin = False
+
+    @classmethod
+    def check(cls, **kwargs):
+        """
+        check sys.argv  or
+        check if Admin  or
+        check file exists  or
+        check manjaro / good DE  or ...
+        """
+        if not cls.admin and os.geteuid() == 0:
+            raise PermissionError(f"Never run this action {cls.__name__} as Admin")
+        return 0
+
+    def apply(self, **kwargs):
+        raise RuntimeError("Backend not yet implemented")
+
+    def run(self, **kwargs):
+        """ subprocess.run() """
+        #name=kwargs.get('name', None)
+        err_code = self.check(**kwargs)
+        print("err_code check() =", err_code)
+        if err_code > 0:
+            return err_code
+        return self.apply(**kwargs)
+
+    def load(self, **kwargs):
+        """ fonction for GUI """
+        if not self.admin:
+            # direct run
+            return self.run(**kwargs)
+        # else uses pkexec self app with same parameters
+        params = ''
+        for key, value in kwargs.items():
+            params = f"{params} -{key} {str(value)}"
+        fileexe = Path(__file__).resolve()
+
+        print("as Admin, run:", f"pkexec {fileexe} --admin -{params}")
+        subprocess.run(f"{fileexe} --admin {params}", shell=True) #TODO add "pkexec {fileexe}"
+        #TODO return real result_code
+        return 0
+
+    @staticmethod
+    def mainConsole():
+        """ run as Admin in console """
+        print("---mainConsole --- ? ", sys.argv)
+        if '--admin' in sys.argv:
+            args = sys.argv[2:]
+            print('As admin, we run params:', args)
+            args = {x[1:]: args[args.index(x)+1] for x in args if args.index(x) % 2 == 0}
+            print("params to dict: ", args)
+            action = None
+
+            if 'theme' in args:
+                action = BackendTheme()
+            if 'wayland' in args:
+                action = BackendWayland()
+
+            if action:
+                err_code = action.run(**args)
+                print("return code is:", err_code)
+                exit(err_code)
+            exit(97) # action not exists
+        else:
+            print("Not admin, we use now  gui ...")
+
+class BackendTheme(Backend):
+    def apply(self, **kwargs):
+        name = kwargs.get('theme')
+        print("Apply user theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
+        return 0
+
+class BackendWayland(Backend):
+    admin = True
+    file_config = "/etc/gdm/custom.conf"
+
+    @classmethod
+    def check(self, **kwargs):
+        """
+        test if DE support wayland for example and/or file exists
+        can use in gui for display on not btn :
+            if BackendWayland.check() == 0: createBtn()
+        """
+        super().check(**kwargs)
+        print("BackendWayland.check()")
+        if not Path(self.file_config).exists():
+            pass    
+            #return 99 # TODO un-comment use it
+
+        print('check kwargs: ', kwargs)
+        if kwargs:
+            if not kwargs.get('wayland') in ['on', 'off']:
+                print("DEBUG, ERROR: expected parameter wayland !")
+                return 1
+        return 0
+
+    def apply(self, **kwargs):
+        ''' TODO un-comment if run with pkexec
+        if cls.admin and os.geteuid() != 0:
+            raise PermissionError(f"Never run this action {self.__name__} as user")
+        '''
+        wayland_state = kwargs.get('wayland')
+        print("Apply: ", self.__class__.__name__, "switch to:", wayland_state)
+        return 0
+
+
+Backend.mainConsole()
+
+##########
+# TESTS backend without pkexec
+#####"####
+
+# actions in gui, but user
+action = BackendTheme()
+err_code = action.load(theme='manjaro', param2='test')
+
+print("wayland support ?", BackendWayland.check() == 0)
+# action in gui, but Admin
+action = BackendWayland()
+err_code = action.load(param1='on', wayland='on')
+exit(err_code)
+
+# end TESTS
 
 def rm_brand():
     commands = ['pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
