@@ -42,6 +42,17 @@ class Backend:
     def apply(self, **kwargs):
         raise RuntimeError("Backend not yet implemented")
 
+    @staticmethod
+    def execute(command:str):
+        """ generic shell call
+            :return tuple (code, stdout, stderr)
+        """
+        proc = subprocess.run(command, shell=True, capture_output=True)
+        print("\n :: execute returncode:", proc.returncode)
+        print(" :: execute out:", proc.stdout.decode())
+        print(" :: execute err:", proc.stderr.decode(), "\n")
+        return proc.returncode, proc.stdout.decode(), proc.stderr.decode()
+
     def run(self, **kwargs):
         """ subprocess.run() """
         #name=kwargs.get('name', None)
@@ -63,9 +74,8 @@ class Backend:
         fileexe = Path(__file__).resolve()
 
         print("as Admin, run:", f"pkexec {fileexe} --admin -{params}")
-        subprocess.run(f"pkexec {fileexe} --admin {params}", shell=True)
-        #TODO return real result_code
-        return 0
+        proc = subprocess.run(f"pkexec {fileexe} --admin {params}", shell=True)
+        return proc.returncode
 
     @staticmethod
     def mainConsole():
@@ -85,7 +95,7 @@ class Backend:
 
             if action:
                 err_code = action.run(**args)
-                print("return code is:", err_code)
+                print("  -> return code is:", err_code)
                 exit(err_code)
             exit(97) # action not exists
         else:
@@ -95,7 +105,9 @@ class BackendTheme(Backend):
     def apply(self, **kwargs):
         name = kwargs.get('theme')
         print("Apply user theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
-        return 0
+        code, out, err = self.execute('ls -l')
+        code, out, err = self.execute('stat /root/.')
+        return code
 
 class BackendWayland(Backend):
     admin = True
@@ -128,7 +140,8 @@ class BackendWayland(Backend):
         
         wayland_state = kwargs.get('wayland')
         print("Apply: ", self.__class__.__name__, "switch to:", wayland_state)
-        return 0
+        code, _, _ = self.execute('stat /root/.')
+        return code
 
 print("\nos.geteuid() :", os.geteuid())
 
