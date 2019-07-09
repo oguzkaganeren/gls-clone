@@ -63,7 +63,7 @@ class Backend:
         fileexe = Path(__file__).resolve()
 
         print("as Admin, run:", f"pkexec {fileexe} --admin -{params}")
-        subprocess.run(f"{fileexe} --admin {params}", shell=True) #TODO add "pkexec {fileexe}"
+        subprocess.run(f"pkexec {fileexe} --admin {params}", shell=True)
         #TODO return real result_code
         return 0
 
@@ -122,16 +122,19 @@ class BackendWayland(Backend):
         return 0
 
     def apply(self, **kwargs):
-        ''' TODO un-comment if run with pkexec
-        if cls.admin and os.geteuid() != 0:
+        # TODO un-comment if run with pkexec
+        if self.admin and os.geteuid() != 0:
             raise PermissionError(f"Never run this action {self.__name__} as user")
-        '''
+        
         wayland_state = kwargs.get('wayland')
         print("Apply: ", self.__class__.__name__, "switch to:", wayland_state)
         return 0
 
+print("\nos.geteuid() :", os.geteuid())
 
 Backend.mainConsole()
+if os.geteuid() == 0:
+    print("\nDEBUG: this script is now call as Admin\n")
 
 ##########
 # TESTS backend without pkexec
