@@ -110,7 +110,7 @@ class BackendTheme(Backend):
         return code
 
 class BackendWayland(Backend):
-    admin = True
+    admin = True    # backend use pkexec
     file_config = "/etc/gdm/custom.conf"
 
     @classmethod
@@ -137,7 +137,7 @@ class BackendWayland(Backend):
         # TODO un-comment if run with pkexec
         if self.admin and os.geteuid() != 0:
             raise PermissionError(f"Never run this action {self.__name__} as user")
-        
+
         wayland_state = kwargs.get('wayland')
         print("Apply: ", self.__class__.__name__, "switch to:", wayland_state)
         code, _, _ = self.execute('stat /root/.')
