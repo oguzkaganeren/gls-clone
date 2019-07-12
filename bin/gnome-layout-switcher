@@ -132,19 +132,27 @@ class BackendWayland(Backend):
 
         print('check kwargs: ', kwargs)
         if kwargs:
-            if not kwargs.get('wayland') in ['on', 'off']:
+            if not kwargs.get('setstate') in ['on', 'off']:
                 print("DEBUG, ERROR: expected parameter wayland !")
                 return 1
         return 0
 
     def apply(self, **kwargs):
-        # TODO un-comment if run with pkexec
         if self.admin and os.geteuid() != 0:
             raise PermissionError(f"Never run this action {self.sign} as user")
 
-        wayland_state = kwargs.get('wayland')
-        print("Apply: ", self.sign, "switch to:", wayland_state)
-        code, _, _ = self.execute('stat /root/.')
+        wayland_state = kwargs.get('setstate')
+        print("debug Apply: ", self.sign, "switch to:", wayland_state)
+        # TODO use pure python open(gdm.conf), write(gdm.conf)...
+        commands = 'sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf'
+        if wayland_state == 'on':
+            commands = 'sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
+        '''
+        NOT RUN for this moment in test
+        code, _, err_msg = self.execute(commands)
+        if code > 0:
+            print("oops, error:", err_msg)'''
+        code, _, _ = self.execute('stat /root/.') # only for test
         return code
 
 print("\nos.geteuid() :", os.geteuid())
@@ -164,7 +172,7 @@ err_code = action.load(theme='manjaro', param2='test')
 print("wayland support ?", BackendWayland.check() == 0)
 # action in gui, but Admin
 action = BackendWayland()
-err_code = action.load(param1='on', wayland='on')
+err_code = action.load(setstate='on')
 exit(err_code)
 
 # end TESTS
