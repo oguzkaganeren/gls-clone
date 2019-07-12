@@ -43,7 +43,7 @@ class Backend:
         raise RuntimeError("Backend not yet implemented")
 
     @staticmethod
-    def execute(command:str):
+    def execute(command: str):
         """ generic shell call
             :return tuple (code, stdout, stderr)
         """
@@ -71,11 +71,15 @@ class Backend:
         params = ''
         for key, value in kwargs.items():
             params = f"{params} -{key} {str(value)}"
-        fileexe = Path(__file__).resolve()
+        fileexe = Path(sys.argv[0]).resolve()
 
-        print("as Admin, run:", f"pkexec {fileexe} --admin -{params}")
-        proc = subprocess.run(f"pkexec {fileexe} --admin {params}", shell=True)
+        print("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
+        proc = subprocess.run(f"pkexec {fileexe} --admin --{self.sign} {params}", shell=True)
         return proc.returncode
+
+    @property
+    def sign(self):
+        return self.__class__.__name__
 
     @staticmethod
     def mainConsole():
@@ -83,23 +87,23 @@ class Backend:
         print("---mainConsole --- ? ", sys.argv)
         if '--admin' in sys.argv:
             args = sys.argv[2:]
-            print('As admin, we run params:', args)
+            sign = args.pop(0)[2:]
+            print("want run action:", sign)
+            if not str(sign).startswith('Backend'):
+                raise RuntimeError(f"Action {sign} not implemented") # run only backend object
+            if not sign in globals():
+                raise RuntimeError(f"Action {sign} not exists")
+
+            print('As admin, we run params:', sys.argv)
             args = {x[1:]: args[args.index(x)+1] for x in args if args.index(x) % 2 == 0}
-            print("params to dict: ", args)
-            action = None
-
-            if 'theme' in args:
-                action = BackendTheme()
-            if 'wayland' in args:
-                action = BackendWayland()
-
-            if action:
-                err_code = action.run(**args)
-                print("  -> return code is:", err_code)
-                exit(err_code)
-            exit(97) # action not exists
+            print("params pass to run(): ", args)
+            action_class = globals()[sign]
+            action = action_class()     # create object from second console parameter
+            err_code = action.run(**args)
+            print("   -> return code is:", err_code)
+            exit(err_code)
         else:
-            print("Not admin, we use now  gui ...")
+            print("debug info: Not admin, we use gui ...")
 
 class BackendTheme(Backend):
     def apply(self, **kwargs):
@@ -136,10 +140,10 @@ class BackendWayland(Backend):
     def apply(self, **kwargs):
         # TODO un-comment if run with pkexec
         if self.admin and os.geteuid() != 0:
-            raise PermissionError(f"Never run this action {self.__name__} as user")
+            raise PermissionError(f"Never run this action {self.sign} as user")
 
         wayland_state = kwargs.get('wayland')
-        print("Apply: ", self.__class__.__name__, "switch to:", wayland_state)
+        print("Apply: ", self.sign, "switch to:", wayland_state)
         code, _, _ = self.execute('stat /root/.')
         return code
 
