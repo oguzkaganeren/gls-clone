@@ -49,16 +49,19 @@ def set_highlight_color(new_color):
     if not Path.is_file(css_file):
         copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
     # Find the current highlight color
-    with open(css_file) as f:
-        file = f.read()
-        current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-        current_color = current_color.group(0)[38:-1]
-        # Replace the old color with new one
-    with open(css_file) as f:
-        newText=f.read().replace(current_color, new_color, 2)
-    # Write the changes
-    with open(css_file, "w") as f:
-        f.write(newText)
+    try:
+        with open(css_file) as f:
+            file = f.read()
+            current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
+            current_color = current_color.group(0)[38:-1]
+            # Replace the old color with new one
+        with open(css_file) as f:
+            newText=f.read().replace(current_color, new_color, 2)
+        # Write the changes
+        with open(css_file, "w") as f:
+            f.write(newText)
+    except FileNotFoundError:
+        print('Cannot set color, gtk.css not found')
 
 class HeaderBarWindow(Gtk.Window):
         
