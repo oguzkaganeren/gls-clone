@@ -26,6 +26,7 @@ layouts = [
 
 class Backend:
     admin = False
+    asynchro = False
 
     @classmethod
     def check(cls, **kwargs):
@@ -43,11 +44,11 @@ class Backend:
         raise RuntimeError("Backend not yet implemented")
 
     @staticmethod
-    def execute(command: str):
+    def execute(command: str, shell: bool = False):
         """ generic shell call
             :return tuple (code, stdout, stderr)
         """
-        proc = subprocess.run(command, shell=True, universal_newlines=True, capture_output=True)
+        proc = subprocess.run(command.split(), shell=shell, universal_newlines=True, capture_output=True)
         print("\n :: execute returncode:", proc.returncode)
         print(" :: execute out:", proc.stdout)
         print(" :: execute err:", proc.stderr, "\n")
@@ -73,6 +74,9 @@ class Backend:
             params = f"{params} -{key} {str(value)}"
         fileexe = Path(sys.argv[0]).resolve()
 
+        # TODO if self.asynchro : GLib.spawn_async (..., self.callback)
+        # else
+        # actual sync
         print("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
         proc = subprocess.run(f"pkexec {fileexe} --admin --{self.sign} {params}", shell=True)
         return proc.returncode
@@ -109,8 +113,40 @@ class BackendTheme(Backend):
     def apply(self, **kwargs):
         name = kwargs.get('theme')
         print("Apply user theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
-        code, out, err = self.execute('ls -l')
-        code, out, err = self.execute('stat /root/.')
+        code, out, err = self.execute('ls -l | cat', shell=True)
+        code, out, err = self.execute('systemctl status sddm', shell=False)
+        code, out, err = self.execute('/usr/bin/stat /root/.', shell=False)
+        return code
+
+
+class backendCups(Backend):
+    admin = True
+    def apply(self, **kwargs):
+        activate = kwargs.get('active') == 1
+        cmd = "disable"
+        if activate:
+            cmd = "enable"
+        code, _, _ = self.execute(f"systemctl {cmd} cups")
+        return code
+
+
+class backendSystemdUnit(Backend):
+    admin = True
+    def apply(self, **kwargs):
+        activate = kwargs.get('active') == 1
+        unit = kwargs.get('unit')
+        cmd = "disable"
+        if activate:
+            cmd = "enable"
+        code, _, _ = self.execute(f"systemctl {cmd} {unit}")
+        return code
+
+class backendBashrc(Backend):
+    admin = False
+    def apply(self, **kwargs):
+        """ add to $PATH EXAMPLE"""
+        path = kwargs.get('unit')
+        code, _, _ = self.execute(f"echo \"PATH=$PATH:{path}\" >> ~/.bashrc")
         return code
 
 class BackendWayland(Backend):
@@ -155,11 +191,10 @@ class BackendWayland(Backend):
         code, _, _ = self.execute('stat /root/.') # only for test
         return code
 
-print("\nos.geteuid() :", os.geteuid())
-
-Backend.mainConsole()
+print("\nDEBUG: os.geteuid() :", os.geteuid())
 if os.geteuid() == 0:
     print("\nDEBUG: this script is now call as Admin\n")
+Backend.mainConsole()
 
 ##########
 # TESTS backend without pkexec
