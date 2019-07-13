@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, Gdk
@@ -259,7 +261,7 @@ class HeaderBarWindow(Gtk.Window):
 
     def on_click_me_clicked(self, button):
         commands = {
-            'manjaro': [
+            'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
@@ -267,25 +269,25 @@ class HeaderBarWindow(Gtk.Window):
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
-            ],
-            'win': [
+            ),
+            'win': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            ],
-            'mac' : [
+            ),
+            'mac' : (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"'
-            ],
-            'gnome' : [
+            ),
+            'gnome' : (
                 'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            ]
+            )
         }
 
         for cmd in commands.get(self.layout, ""):
