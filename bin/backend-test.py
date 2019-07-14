@@ -3,6 +3,7 @@ import os
 import sys
 from pathlib import Path
 import subprocess
+import asyncio
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
@@ -13,7 +14,15 @@ from gi.repository import Gtk, Gio
 
 class Backend:
     admin = True
-    asynchro = False
+
+    def __init__(self, callback_func=None):
+        """ by defaut use async calls """
+        self.asynchro = True
+        self.code = -1    # not run
+        self.stdout = ""
+        self.stderr = ""
+        if callback_func:
+            self.on_end = callback_func
 
     @classmethod
     def check(cls, **kwargs):
@@ -30,17 +39,45 @@ class Backend:
     def apply(self, **kwargs):
         raise RuntimeError("Backend not yet implemented")
 
-    @staticmethod
-    def execute(command: str, shell: bool = False):
-        """ generic shell call
-            :return tuple (code, stdout, stderr)
-        """
+    async def execute(self, command: str):
+        """ generic shell async call """
+        self.stdout = ""
+        self.stderr = ""
         print(" :: exec :", command)
-        proc = subprocess.run(command.split(), shell=shell, universal_newlines=True, capture_output=True)
+        proc = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        self.stdout, self.stderr = await proc.communicate()
+        self.stdout = self.stdout.decode()
+        self.stderr = self.stderr.decode()
+        #proc = subprocess.run(command.split(), shell=shell, universal_newlines=True, capture_output=True)
+
         print("\n :: execute returncode:", proc.returncode)
-        print(" :: execute out:", proc.stdout)
-        print(" :: execute err:", proc.stderr, "\n")
-        return proc.returncode, proc.stdout, proc.stderr
+        print(" :: execute out:", self.stdout)
+        print(" :: execute err:", self.stderr, "\n")
+        self.err_code = proc.returncode
+        #return proc.returncode, self.stdout, self.stderr
+
+    async def _execute_pkexec(self, command: str):
+        """ run self script async call"""
+        self.stdout = ""
+        self.stderr = ""
+        proc = await asyncio.create_subprocess_shell(
+            command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        self.stdout, self.stderr = await proc.communicate()
+        self.stdout = self.stdout.decode()
+        self.stderr = self.stderr.decode()
+        self.err_code = proc.returncode
+        print("\n :: pkexec execute returncode:", proc.returncode)
+        print(" :: pkexec execute out:", self.stdout)
+        print(" :: pkexec execute err:", self.stderr, "\n")
+        self._on_end_process()
+
 
     def run(self, **kwargs):
         """ subprocess.run() """
@@ -63,11 +100,25 @@ class Backend:
         fileexe = Path(sys.argv[0]).resolve()
 
         # TODO if self.asynchro : GLib.spawn_async (..., self.callback)
+        #https://gist.github.com/fabrixxm/8deb791ad0930fa209be
         # else
         # actual sync
         print("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
-        proc = subprocess.run(f"pkexec {fileexe} --admin --{self.sign} {params}", shell=True)
-        return proc.returncode
+        return asyncio.run(self._execute_pkexec(f"pkexec {fileexe} --admin --{self.sign} {params}"))
+        print("end asyncio.run()")
+        #proc = subprocess.run(f"pkexec {fileexe} --admin --{self.sign} {params}", shell=True)
+
+    def _on_end_process(self):
+        """ async callback function from process """
+        print("DEBUG async: END process" , self.sign)
+        if '--admin' in sys.argv:
+            exit(self.err_code)
+        if self.on_end:
+            self.on_end(self.err_code, self.stdout, self.stderr)
+
+    def on_end(self, code:int, stdout: str, stderr: str):
+        """ callback for gui """
+        pass
 
     @property
     def sign(self):
@@ -92,10 +143,10 @@ class Backend:
             action_class = globals()[sign]      # param to Class
             action = action_class()             # create object from second console parameter
             err_code = action.run(**args)
-            print("   -> return code is:", err_code)
-            exit(err_code)
+            return True
         else:
             print("debug info: Not admin, we use gui ...")
+            return False
 
 
 class BackendTheme(Backend):
@@ -103,9 +154,9 @@ class BackendTheme(Backend):
         """ make nothing """
         name = kwargs.get('theme')
         print("Apply new theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
-        code, _, _ = self.execute('ls -l | cat', shell=True)
-        code, out, err = self.execute('/usr/bin/stat /root/.', shell=False)
-        return code
+        asyncio.run(self.execute('ls -l | cat'))
+        asyncio.run(self.execute('/usr/bin/stat /root/.'))
+
 
 
 class BackendCups(Backend):
@@ -118,19 +169,17 @@ class BackendCups(Backend):
         cmd = "disable"
         if activate == "True":
             cmd = "enable"
-        code, _, _ = self.execute(f"systemctl {cmd} {self.service}")
-        return code
+        asyncio.run(self.execute(f"systemctl {cmd} {self.service}"))
 
     @classmethod
     def check(cls, **kwargs):
         """ example test if service exists, can use in gui for show/hide btn """
-        code, _, _ = cls.execute("systemctl cat {self.service}")
-        return code == 0
+        # test if file or service exists
+        return 0
 
     def start(self):
         """ exemple we can create methods for actions call in apply()"""
-        code, _, _ = self.execute("systemctl start {self.service}", shell=False)
-        return code
+        asyncio.run(self.execute("systemctl start {self.service}"))
 
 
 class BackendUnit(Backend):
@@ -140,8 +189,7 @@ class BackendUnit(Backend):
         verb = 'cat' # override for demo
         code = 99
         if unit:
-            code, _, _ = self.execute(f"systemctl {verb} {unit}")
-        return code
+            asyncio.run(self.execute(f"systemctl {verb} {unit}"))
 
 ###############################
 # GUI
@@ -188,20 +236,23 @@ class TestWindow(Gtk.Window):
                 - for compact demo : only one on_apply() for all btns
         """
         if data_call == 'xxx':
-            action = BackendUnit()
+            action = BackendUnit(callback_func=self.on_end_process)
             err_code = action.load(unit='sddm', verb='edit')
-            self.display_msg(str(err_code))
             return
 
         if data_call == 'theme':
             action = BackendTheme()
+            action.on_end = self.on_end_process # pass by init or after
             err_code = action.load(theme='TheBestTheme')
-            self.display_msg(str(err_code))
             return
 
-        action = BackendCups()
-        err_code = action.load(active=data_call)
-        self.display_msg(str(err_code))
+        action = BackendCups(callback_func=self.on_end_process)
+        action.on_end = self.on_end_process
+        action.load(active=data_call)
+
+
+    def on_end_process(self, code, stdout, stderr):
+        self.display_msg(f"End process: {code}\n\n{stdout}\n\n{stderr}")
 
     def display_msg(self, msg: str, ico=Gtk.MessageType.INFO):
         print("GUI INFO dialog return:", msg)
@@ -234,6 +285,5 @@ if __name__ == '__main__':
 
     print("\nDEBUG: os.geteuid() :", os.geteuid())
 
-    Backend.mainConsole()   # only if call from pkexex (or sudo --admin)
-
-    main()    # gui
+    if not Backend.mainConsole():   # only if call from pkexex (or sudo --admin)
+        main()    # gui

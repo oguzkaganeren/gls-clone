@@ -191,6 +191,7 @@ class BackendWayland(Backend):
         code, _, _ = self.execute('stat /root/.') # only for test
         return code
 
+'''
 print("\nDEBUG: os.geteuid() :", os.geteuid())
 if os.geteuid() == 0:
     print("\nDEBUG: this script is now call as Admin\n")
@@ -211,6 +212,7 @@ err_code = action.load(setstate='on')
 exit(err_code)
 
 # end TESTS
+'''
 
 def rm_brand():
     commands = ['pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
@@ -417,7 +419,7 @@ class HeaderBarWindow(Gtk.Window):
         col = ( int(x) for x in col )
         col = '#%02x%02x%02x' % tuple(col)
         set_highlight_color(col)
-        
+
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
