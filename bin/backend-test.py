@@ -58,6 +58,8 @@ class Backend:
         print(" :: execute out:", self.stdout)
         print(" :: execute err:", self.stderr, "\n")
         self.err_code = proc.returncode
+        if '--admin' in sys.argv:
+            exit(self.err_code)
         #return proc.returncode, self.stdout, self.stderr
 
     async def _execute_pkexec(self, command: str):
@@ -110,13 +112,13 @@ class Backend:
 
     def _on_end_process(self):
         """ async callback function from process """
-        print("DEBUG async: END process" , self.sign)
+        print("DEBUG _on_end_process() async: END process", self.sign, self.err_code)
         if '--admin' in sys.argv:
             exit(self.err_code)
         if self.on_end:
-            self.on_end(self.err_code, self.stdout, self.stderr)
+            self.on_end(self.sign, self.err_code, self.stdout, self.stderr)
 
-    def on_end(self, code:int, stdout: str, stderr: str):
+    def on_end(self, action:str, code:int, stdout: str, stderr: str):
         """ callback for gui """
         pass
 
@@ -154,6 +156,12 @@ class BackendTheme(Backend):
         """ make nothing """
         name = kwargs.get('theme')
         print("Apply new theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
+        '''
+        # if we not want async :
+        proc = subprocess.run('/usr/bin/statERR /root/.', shell=True, text=True, capture_output=True)
+        exit(proc.returncode)
+        # or want async :
+        '''
         asyncio.run(self.execute('ls -l | cat'))
         asyncio.run(self.execute('/usr/bin/stat /root/.'))
 
@@ -251,14 +259,14 @@ class TestWindow(Gtk.Window):
         action.load(active=data_call)
 
 
-    def on_end_process(self, code, stdout, stderr):
-        self.display_msg(f"End process: {code}\n\n{stdout}\n\n{stderr}")
+    def on_end_process(self, action, code, stdout, stderr):
+        self.display_msg(f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
 
     def display_msg(self, msg: str, ico=Gtk.MessageType.INFO):
-        print("GUI INFO dialog return:", msg)
+        print("GUI INFO dialog return")
         if msg == "0":  # show dialog only if error
             return
-        dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=ico, buttons=Gtk.ButtonsType.OK, text="function return code:")
+        dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=ico, buttons=Gtk.ButtonsType.OK, text="Action return:")
         dialog.format_secondary_text(msg)
         dialog.run()
         dialog.destroy()
