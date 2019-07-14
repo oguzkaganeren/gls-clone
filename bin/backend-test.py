@@ -157,13 +157,14 @@ class BackendTheme(Backend):
         name = kwargs.get('theme')
         print("Apply new theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
         '''
-        # if we not want async :
+        # if we not want async for run 2..3 process :
         proc = subprocess.run('/usr/bin/statERR /root/.', shell=True, text=True, capture_output=True)
         exit(proc.returncode)
         # or want async :
         '''
-        asyncio.run(self.execute('ls -l | cat'))
         asyncio.run(self.execute('/usr/bin/stat /root/.'))
+        # never wait end -> script stop at end of first process
+        asyncio.run(self.execute('ls -l | cat'))
 
 
 
