@@ -234,6 +234,7 @@ class TestWindow(Gtk.Window):
         btn = Gtk.Button.new_with_label("ls /root/")
         btn.connect("clicked", self.on_apply, 'theme')
         box.pack_end(btn, expand=True, fill=True, padding=4)
+        self.btn = btn # for demo validate / unvalidate
 
         self.set_size_request(300, 100)
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -243,15 +244,16 @@ class TestWindow(Gtk.Window):
         """ run actions as root with pkexec
                 - for compact demo : only one on_apply() for all btns
         """
+        self.btn.set_sensitive(False) # demo : not always this btn
         if data_call == 'xxx':
             action = BackendUnit(callback_func=self.on_end_process)
-            err_code = action.load(unit='sddm', verb='edit')
+            action.load(unit='sddm', verb='edit')
             return
 
         if data_call == 'theme':
             action = BackendTheme()
             action.on_end = self.on_end_process # pass by init or after
-            err_code = action.load(theme='TheBestTheme')
+            action.load(theme='TheBestTheme')
             return
 
         action = BackendCups(callback_func=self.on_end_process)
@@ -260,6 +262,7 @@ class TestWindow(Gtk.Window):
 
 
     def on_end_process(self, action, code, stdout, stderr):
+        self.btn.set_sensitive(True)  # demo : not always this btn
         self.display_msg(f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
 
     def display_msg(self, msg: str, ico=Gtk.MessageType.INFO):
