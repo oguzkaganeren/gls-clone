@@ -59,6 +59,7 @@ class Backend:
         print(" :: execute err:", self.stderr, "\n")
         self.err_code = proc.returncode
         if '--admin' in sys.argv:
+            print(self.stderr, file=sys.stderr)
             exit(self.err_code)
         #return proc.returncode, self.stdout, self.stderr
 
@@ -101,14 +102,9 @@ class Backend:
             params = f"{params} -{key} {str(value)}"
         fileexe = Path(sys.argv[0]).resolve()
 
-        # TODO if self.asynchro : GLib.spawn_async (..., self.callback)
-        #https://gist.github.com/fabrixxm/8deb791ad0930fa209be
-        # else
         # actual sync
         print("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
         return asyncio.run(self._execute_pkexec(f"pkexec {fileexe} --admin --{self.sign} {params}"))
-        print("end asyncio.run()")
-        #proc = subprocess.run(f"pkexec {fileexe} --admin --{self.sign} {params}", shell=True)
 
     def _on_end_process(self):
         """ async callback function from process """
@@ -154,6 +150,9 @@ class Backend:
 class BackendTheme(Backend):
     def apply(self, **kwargs):
         """ make nothing """
+        '''
+        not use asyncio if backend if admin (after async pkexec)
+        '''
         name = kwargs.get('theme')
         print("Apply new theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
         '''
