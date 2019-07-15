@@ -38,12 +38,17 @@ class Backend:
 
     def apply(self, **kwargs):
         raise RuntimeError("Backend not yet implemented")
+    
+    @staticmethod
+    def log(*args):
+        #print(args)
+        print('\033[92m', *args, '\033[0m')
 
     async def execute(self, command: str):
         """ generic shell async call """
         self.stdout = ""
         self.stderr = ""
-        print(" :: exec :", command)
+        self.log(" :: exec :", command)
         proc = await asyncio.create_subprocess_shell(
             command,
             stdout=asyncio.subprocess.PIPE,
@@ -54,13 +59,13 @@ class Backend:
         self.stderr = self.stderr.decode()
         #proc = subprocess.run(command.split(), shell=shell, universal_newlines=True, capture_output=True)
 
-        print("\n :: execute returncode:", proc.returncode)
-        print(" :: execute out:", self.stdout)
-        print(" :: execute err:", self.stderr, "\n")
-        self.err_code = proc.returncode
+        self.log("\n :: execute returncode:", proc.returncode)
+        self.log(" :: execute out:", self.stdout)
+        self.log(" :: execute err:", self.stderr, "\n")
+        self.code = proc.returncode
         if '--admin' in sys.argv:
             print(self.stderr, file=sys.stderr)
-            exit(self.err_code)
+            exit(self.code)
         #return proc.returncode, self.stdout, self.stderr
 
     async def _execute_pkexec(self, command: str):
@@ -75,10 +80,10 @@ class Backend:
         self.stdout, self.stderr = await proc.communicate()
         self.stdout = self.stdout.decode()
         self.stderr = self.stderr.decode()
-        self.err_code = proc.returncode
-        print("\n :: pkexec execute returncode:", proc.returncode)
-        print(" :: pkexec execute out:", self.stdout)
-        print(" :: pkexec execute err:", self.stderr, "\n")
+        self.code = proc.returncode
+        self.log("\n :: pkexec execute returncode:", proc.returncode)
+        self.log(" :: pkexec execute out:", self.stdout)
+        self.log(" :: pkexec execute err:", self.stderr, "\n")
         self._on_end_process()
 
 
@@ -86,7 +91,7 @@ class Backend:
         """ subprocess.run() """
         #name=kwargs.get('name', None)
         err_code = self.check(**kwargs)
-        print("err_code check() =", err_code)
+        self.log("err_code check() =", err_code)
         if err_code > 0:
             return err_code
         return self.apply(**kwargs)
@@ -103,18 +108,18 @@ class Backend:
         fileexe = Path(sys.argv[0]).resolve()
 
         # actual sync
-        print("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
+        self.log("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
         return asyncio.run(self._execute_pkexec(f"pkexec {fileexe} --admin --{self.sign} {params}"))
 
     def _on_end_process(self):
         """ async callback function from process """
-        print("DEBUG _on_end_process() async: END process", self.sign, self.err_code)
+        self.log("DEBUG _on_end_process() async: END process", self.sign, self.code)
         if '--admin' in sys.argv:
-            exit(self.err_code)
+            exit(self.code)
         if self.on_end:
-            self.on_end(self.sign, self.err_code, self.stdout, self.stderr)
+            self.on_end(self.sign, self.code, self.stdout, self.stderr)
 
-    def on_end(self, action:str, code:int, stdout: str, stderr: str):
+    def on_end(self, action: str, code: int, stdout: str, stderr: str):
         """ callback for gui """
         pass
 
@@ -136,11 +141,12 @@ class Backend:
                 raise RuntimeError(f"Action {sign} not exists")
 
             print('As admin, we run params:', sys.argv)
+            print("ENV pkexec :", os.environ)
             args = {x[1:]: args[args.index(x)+1] for x in args if args.index(x) % 2 == 0}
             print("params pass to run(): ", args)
             action_class = globals()[sign]      # param to Class
             action = action_class()             # create object from second console parameter
-            err_code = action.run(**args)
+            action.run(**args)
             return True
         else:
             print("debug info: Not admin, we use gui ...")
