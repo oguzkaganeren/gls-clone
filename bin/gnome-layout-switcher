@@ -24,196 +24,6 @@ layouts = [
     { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
 ]
 
-class Backend:
-    admin = False
-    asynchro = False
-
-    @classmethod
-    def check(cls, **kwargs):
-        """
-        check sys.argv  or
-        check if Admin  or
-        check file exists  or
-        check manjaro / good DE  or ...
-        """
-        if not cls.admin and os.geteuid() == 0:
-            raise PermissionError(f"Never run this action {cls.__name__} as Admin")
-        return 0
-
-    def apply(self, **kwargs):
-        raise RuntimeError("Backend not yet implemented")
-
-    @staticmethod
-    def execute(command: str, shell: bool = False):
-        """ generic shell call
-            :return tuple (code, stdout, stderr)
-        """
-        proc = subprocess.run(command.split(), shell=shell, universal_newlines=True, capture_output=True)
-        print("\n :: execute returncode:", proc.returncode)
-        print(" :: execute out:", proc.stdout)
-        print(" :: execute err:", proc.stderr, "\n")
-        return proc.returncode, proc.stdout, proc.stderr
-
-    def run(self, **kwargs):
-        """ subprocess.run() """
-        #name=kwargs.get('name', None)
-        err_code = self.check(**kwargs)
-        print("err_code check() =", err_code)
-        if err_code > 0:
-            return err_code
-        return self.apply(**kwargs)
-
-    def load(self, **kwargs):
-        """ fonction for GUI """
-        if not self.admin:
-            # direct run
-            return self.run(**kwargs)
-        # else uses pkexec self app with same parameters
-        params = ''
-        for key, value in kwargs.items():
-            params = f"{params} -{key} {str(value)}"
-        fileexe = Path(sys.argv[0]).resolve()
-
-        # TODO if self.asynchro : GLib.spawn_async (..., self.callback)
-        # else
-        # actual sync
-        print("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
-        proc = subprocess.run(f"pkexec {fileexe} --admin --{self.sign} {params}", shell=True)
-        return proc.returncode
-
-    @property
-    def sign(self):
-        return self.__class__.__name__
-
-    @staticmethod
-    def mainConsole():
-        """ run as Admin in console """
-        print("---mainConsole --- ? ", sys.argv)
-        if '--admin' in sys.argv:
-            args = sys.argv[2:]
-            sign = args.pop(0)[2:]
-            print("want run action:", sign)
-            if not str(sign).startswith('Backend'):
-                raise RuntimeError(f"Action {sign} not implemented") # run only backend object
-            if not sign in globals():
-                raise RuntimeError(f"Action {sign} not exists")
-
-            print('As admin, we run params:', sys.argv)
-            args = {x[1:]: args[args.index(x)+1] for x in args if args.index(x) % 2 == 0}
-            print("params pass to run(): ", args)
-            action_class = globals()[sign]
-            action = action_class()     # create object from second console parameter
-            err_code = action.run(**args)
-            print("   -> return code is:", err_code)
-            exit(err_code)
-        else:
-            print("debug info: Not admin, we use gui ...")
-
-class BackendTheme(Backend):
-    def apply(self, **kwargs):
-        name = kwargs.get('theme')
-        print("Apply user theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
-        code, out, err = self.execute('ls -l | cat', shell=True)
-        code, out, err = self.execute('systemctl status sddm', shell=False)
-        code, out, err = self.execute('/usr/bin/stat /root/.', shell=False)
-        return code
-
-
-class backendCups(Backend):
-    admin = True
-    def apply(self, **kwargs):
-        activate = kwargs.get('active') == 1
-        cmd = "disable"
-        if activate:
-            cmd = "enable"
-        code, _, _ = self.execute(f"systemctl {cmd} cups")
-        return code
-
-
-class backendSystemdUnit(Backend):
-    admin = True
-    def apply(self, **kwargs):
-        activate = kwargs.get('active') == 1
-        unit = kwargs.get('unit')
-        cmd = "disable"
-        if activate:
-            cmd = "enable"
-        code, _, _ = self.execute(f"systemctl {cmd} {unit}")
-        return code
-
-class backendBashrc(Backend):
-    admin = False
-    def apply(self, **kwargs):
-        """ add to $PATH EXAMPLE"""
-        path = kwargs.get('unit')
-        code, _, _ = self.execute(f"echo \"PATH=$PATH:{path}\" >> ~/.bashrc")
-        return code
-
-class BackendWayland(Backend):
-    admin = True    # backend use pkexec
-    file_config = "/etc/gdm/custom.conf"
-
-    @classmethod
-    def check(self, **kwargs):
-        """
-        test if DE support wayland for example and/or file exists
-        can use in gui for display on not btn :
-            if BackendWayland.check() == 0: createBtn()
-        """
-        super().check(**kwargs)
-        print("BackendWayland.check()")
-        if not Path(self.file_config).exists():
-            pass
-            #return 99 # TODO un-comment use it
-
-        print('check kwargs: ', kwargs)
-        if kwargs:
-            if not kwargs.get('setstate') in ['on', 'off']:
-                print("DEBUG, ERROR: expected parameter wayland !")
-                return 1
-        return 0
-
-    def apply(self, **kwargs):
-        if self.admin and os.geteuid() != 0:
-            raise PermissionError(f"Never run this action {self.sign} as user")
-
-        wayland_state = kwargs.get('setstate')
-        print("debug Apply: ", self.sign, "switch to:", wayland_state)
-        # TODO use pure python open(gdm.conf), write(gdm.conf)...
-        commands = 'sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf'
-        if wayland_state == 'on':
-            commands = 'sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
-        '''
-        NOT RUN for this moment in test
-        code, _, err_msg = self.execute(commands)
-        if code > 0:
-            print("oops, error:", err_msg)'''
-        code, _, _ = self.execute('stat /root/.') # only for test
-        return code
-
-'''
-print("\nDEBUG: os.geteuid() :", os.geteuid())
-if os.geteuid() == 0:
-    print("\nDEBUG: this script is now call as Admin\n")
-Backend.mainConsole()
-
-##########
-# TESTS backend without pkexec
-#####"####
-
-# actions in gui, but user
-action = BackendTheme()
-err_code = action.load(theme='manjaro', param2='test')
-
-print("wayland support ?", BackendWayland.check() == 0)
-# action in gui, but Admin
-action = BackendWayland()
-err_code = action.load(setstate='on')
-exit(err_code)
-
-# end TESTS
-'''
-
 def rm_brand():
     commands = ['pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
     'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css.bak']
@@ -241,16 +51,19 @@ def set_highlight_color(new_color):
     if not Path.is_file(css_file):
         copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
     # Find the current highlight color
-    with open(css_file) as f:
-        file = f.read()
-        current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-        current_color = current_color.group(0)[38:-1]
-        # Replace the old color with new one
-    with open(css_file) as f:
-        newText=f.read().replace(current_color, new_color, 2)
-    # Write the changes
-    with open(css_file, "w") as f:
-        f.write(newText)
+    try:
+        with open(css_file) as f:
+            file = f.read()
+            current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
+            current_color = current_color.group(0)[38:-1]
+            # Replace the old color with new one
+        with open(css_file) as f:
+            newText=f.read().replace(current_color, new_color, 2)
+        # Write the changes
+        with open(css_file, "w") as f:
+            f.write(newText)
+    except FileNotFoundError:
+        print('Cannot set color, gtk.css not found')
 
 class HeaderBarWindow(Gtk.Window):
         
@@ -419,7 +232,7 @@ class HeaderBarWindow(Gtk.Window):
         col = ( int(x) for x in col )
         col = '#%02x%02x%02x' % tuple(col)
         set_highlight_color(col)
-
+        
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
@@ -448,7 +261,7 @@ class HeaderBarWindow(Gtk.Window):
 
     def on_click_me_clicked(self, button):
         commands = {
-            'manjaro': [
+            'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
@@ -456,25 +269,25 @@ class HeaderBarWindow(Gtk.Window):
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
-            ],
-            'win': [
+            ),
+            'win': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            ],
-            'mac' : [
+            ),
+            'mac' : (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"'
-            ],
-            'gnome' : [
+            ),
+            'gnome' : (
                 'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            ]
+            )
         }
 
         for cmd in commands.get(self.layout, ""):
