@@ -66,7 +66,7 @@ def set_highlight_color(new_color):
         print('Cannot set color, gtk.css not found')
 
 class HeaderBarWindow(Gtk.Window):
-        
+
     def __init__(self):
         self.layout = 'manjaro'
         Gtk.Window.__init__(self, title="Gnome Layout Switcher")
@@ -94,16 +94,16 @@ class HeaderBarWindow(Gtk.Window):
         # Layout menu
         vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
         self.add(vbox)
-        vbox.attach(stack,  1, 1, 1, 3)
+        vbox.attach(stack, 1, 1, 1, 3)
         radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0, margin_top=15)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
         self.btn_layout_first = None
         for layout in layouts:
-            self.create_layout_btn(layout=layout ,the_grid=radiobox)
+            self.create_layout_btn(layout=layout, the_grid=radiobox)
                 # A button to apply the settings
         applybutton = Gtk.Button.new_with_label("Apply")
-        applybutton.connect("clicked", self.on_click_me_clicked)
+        applybutton.connect("clicked", self.on_layoutapply_clicked)
         radiobox.attach(applybutton, 1, 6, 2, 1)
         applybutton.props.valign = Gtk.Align.END
 
@@ -148,7 +148,7 @@ class HeaderBarWindow(Gtk.Window):
         wayland_label.props.halign = Gtk.Align.START
 
         theme_button = Gtk.Button.new_with_label("Open")
-        theme_button.connect("clicked", self.on_button_activated)
+        theme_button.connect("clicked", self.on_gnometweaks_activated)
         theme_label = Gtk.Label()
         theme_label.set_markup("        Theme settings")
         theme_label.props.halign = Gtk.Align.START
@@ -189,7 +189,7 @@ class HeaderBarWindow(Gtk.Window):
         btn = Gtk.RadioButton.new_with_label_from_widget(self.btn_layout_first, layout['label'])
         if not self.btn_layout_first:
             self.btn_layout_first = btn
-        btn.connect("toggled", self.on_button_toggled, layout['id'])
+        btn.connect("toggled", self.on_layout_toggled, layout['id'])
         the_grid.attach(btn, layout['x'], layout['y'], 1, 1)
         # Set preview images
         resDirectory = Path('../data').resolve()   # only if we use git, path exists
@@ -213,13 +213,14 @@ class HeaderBarWindow(Gtk.Window):
         the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
 
     # placeholder functions
-    def on_button_toggled(self, button, name):
+    def on_layout_toggled(self, button, name):
         state = Opacity.LOW
         if button.get_active():
             state = Opacity.TOP
             self.layout = name
             print('active layout:', self.layout)
         button.image.set_opacity(state)    # change img opacity from state
+
     def on_over_img(self, box, event, isOverImage):
         """on mouse over / out : change opacity"""
         if box.btn.get_active():
@@ -255,15 +256,14 @@ class HeaderBarWindow(Gtk.Window):
             rm_brand()
         print("Branding was turned", state)
 
-    def on_button_activated(self, button):
-        cmd = 'gnome-tweaks &'
-        subprocess.run(cmd, shell=True)
+    def on_gnometweaks_activated(self, button):
+        subprocess.run('gnome-tweaks &', shell=True)
 
     # Make images clickable
     def on_click_img(self, box, event):
-        box.btn.set_active(True) # change checkbox state and call on_button_toggled()
+        box.btn.set_active(True) # change checkbox state and call on_layout_toggled()
 
-    def on_click_me_clicked(self, button):
+    def on_layoutapply_clicked(self, button):
         commands = {
             'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
