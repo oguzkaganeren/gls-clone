@@ -192,8 +192,8 @@ class HeaderBarWindow(Gtk.Window):
         btn.connect("toggled", self.on_layout_toggled, layout['id'])
         the_grid.attach(btn, layout['x'], layout['y'], 1, 1)
         # Set preview images
-        resDirectory = Path('../data').resolve()   # only if we use git, path exists
-        if not resDirectory.exists():
+        resDirectory = Path(__file__).parent / "../data"   # only if we use git, path exists
+        if not resDirectory.resolve().exists():
             resDirectory = '/usr/share/gls'    # use installed dir by pacman
         preview_img = Gtk.Image()
         preview_img.set_from_file(f"{resDirectory}/pictures/{layout['id']}preview.png")
