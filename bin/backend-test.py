@@ -3,10 +3,65 @@ import os
 import sys
 from pathlib import Path
 import subprocess
-import asyncio
+import threading
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
+from gi.overrides import GLib
+
+
+class PopenWrapper(object):
+    def __init__(self):
+        self.process = None
+        self.stdout_reader_thread = None
+        self.stderr_reader_thread = None
+        self.exit_watcher = None
+        self.stdout = ''
+        self.stderr = ''
+
+    def run(self, command):
+        self.process = subprocess.Popen(command,
+                text=True, shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                stdin=subprocess.DEVNULL
+        )
+        self.stdout_reader_thread = threading.Thread(target=self._reader, args=(self.process.stdout,))
+        self.stderr_reader_thread = threading.Thread(target=self._readererr, args=(self.process.stderr,))
+        self.exit_watcher = threading.Thread(target=self._exit_watcher)
+
+        self.stdout_reader_thread.start()
+        self.stderr_reader_thread.start()
+        self.exit_watcher.start()
+
+    def _reader(self, fileobj):
+        for line in fileobj:
+            self.stdout = f"{self.stdout}{line}"
+            self.on_data(line)
+
+    def _readererr(self, fileobj):
+        for line in fileobj:
+            self.stderr = f"{self.stderr}{line}"
+            self.on_data_err(line)
+
+    def _exit_watcher(self):
+        self.process.wait()
+        self.stdout_reader_thread.join()
+        self.stderr_reader_thread.join()
+        self.on_exit(self.process.returncode, self.stdout, self.stderr)
+
+    def on_data(self, line):
+        print(f"\033[92m ::\033[0m {line}", end=" ")  #TODO comment for production
+
+    def on_data_err(self, line):
+        print(f"\033[91mSTDERR:\033[0m {line}", end="")  #TODO comment for production
+
+    def on_exit(self, *data):
+        return self.process.returncode
+
+    def join(self):
+        self.process.wait()
+
 
 ###############################
 ### system backend
@@ -38,63 +93,44 @@ class Backend:
 
     def apply(self, **kwargs):
         raise RuntimeError("Backend not yet implemented")
-    
+
     @staticmethod
     def log(*args):
         #print(args)
         print('\033[92m', *args, '\033[0m')
 
-    async def execute(self, command: str):
-        """ generic shell async call """
+    def execute(self, command: str) -> bool:
+        """ generic shell sync call """
         self.stdout = ""
         self.stderr = ""
-        self.log(" :: exec :", command)
-        proc = await asyncio.create_subprocess_shell(
-            command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        self.stdout, self.stderr = await proc.communicate()
-        self.stdout = self.stdout.decode()
-        self.stderr = self.stderr.decode()
-        #proc = subprocess.run(command.split(), shell=shell, universal_newlines=True, capture_output=True)
-
-        self.log("\n :: execute returncode:", proc.returncode)
-        self.log(" :: execute out:", self.stdout)
-        self.log(" :: execute err:", self.stderr, "\n")
+        self.log(" :: exec cmd:", command)
+        proc = subprocess.run(command, shell=True, text=True, capture_output=True)# universal_newlines=True, capture_output=True)
+        self.stderr = proc.stderr
+        self.stdout = proc.stdout
         self.code = proc.returncode
+        self.log(" :: exec out:", self.stdout)
+        self.log(" :: exec err:", self.code, self.stderr, "\n")
+
         if '--admin' in sys.argv:
             print(self.stderr, file=sys.stderr)
-            exit(self.code)
-        #return proc.returncode, self.stdout, self.stderr
+        return self.code == 0
 
-    async def _execute_pkexec(self, command: str):
+    def _execute_pkexec(self, command: str):
         """ run self script async call"""
-        self.stdout = ""
-        self.stderr = ""
-        proc = await asyncio.create_subprocess_shell(
-            command,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        self.stdout, self.stderr = await proc.communicate()
-        self.stdout = self.stdout.decode()
-        self.stderr = self.stderr.decode()
-        self.code = proc.returncode
-        self.log("\n :: pkexec execute returncode:", proc.returncode)
-        self.log(" :: pkexec execute out:", self.stdout)
-        self.log(" :: pkexec execute err:", self.stderr, "\n")
-        self._on_end_process()
-
+        pkexec = PopenWrapper()
+        pkexec.on_exit = self._on_end_process
+        pkexec.run(command)
 
     def run(self, **kwargs):
         """ subprocess.run() """
         #name=kwargs.get('name', None)
         err_code = self.check(**kwargs)
-        self.log("err_code check() =", err_code)
+        #self.log("err_code check() =", err_code)
         if err_code > 0:
             return err_code
-        return self.apply(**kwargs)
+        self.apply(**kwargs)
+        if '--admin' in sys.argv:
+            exit(self.code)
 
     def load(self, **kwargs):
         """ fonction for GUI """
@@ -107,13 +143,18 @@ class Backend:
             params = f"{params} -{key} {str(value)}"
         fileexe = Path(sys.argv[0]).resolve()
 
-        # actual sync
+        # actual async
         self.log("as Admin, run:", f"pkexec {fileexe} --admin --{self.sign} -{params}")
-        return asyncio.run(self._execute_pkexec(f"pkexec {fileexe} --admin --{self.sign} {params}"))
+        self._execute_pkexec(f"pkexec {fileexe} --admin --{self.sign} {params}")
+        #return await self._execute_pkexec(f"pkexec {fileexe} --admin --{self.sign} {params}")
 
-    def _on_end_process(self):
+    def _on_end_process(self, code, stdout, stderr):
         """ async callback function from process """
-        self.log("DEBUG _on_end_process() async: END process", self.sign, self.code)
+        self.code = code
+        self.stderr = stderr
+        self.stdout = stdout
+        self.log("DEBUG _on_end_process() async: END process", self.sign, self.code, self.stderr)
+
         if '--admin' in sys.argv:
             exit(self.code)
         if self.on_end:
@@ -152,24 +193,24 @@ class Backend:
             print("debug info: Not admin, we use gui ...")
             return False
 
+###############################
+# examples backend class
+###############################
 
 class BackendTheme(Backend):
     def apply(self, **kwargs):
-        """ make nothing """
-        '''
-        not use asyncio if backend if admin (after async pkexec)
-        '''
+        """ make nothing but good test """
         name = kwargs.get('theme')
-        print("Apply new theme : ", self.__class__.__name__, "switch to:", name, "\n\n")
-        '''
-        # if we not want async for run 2..3 process :
-        proc = subprocess.run('/usr/bin/statERR /root/.', shell=True, text=True, capture_output=True)
-        exit(proc.returncode)
-        # or want async :
-        '''
-        asyncio.run(self.execute('/usr/bin/stat /root/.'))
-        # never wait end -> script stop at end of first process
-        asyncio.run(self.execute('ls -l | cat'))
+        print("Apply new theme : ", self.sign, "switch for:", name, "\n\n")
+
+        if not self.execute('/usr/bin/stat /root/. && env'):
+            #pass
+            pass
+        if not self.execute('sleep 4'):
+            print("ERROR:", self.code, "we can exit process, not run next")
+            # return
+            pass
+        self.execute('echo "ok"')
 
 
 
@@ -183,7 +224,7 @@ class BackendCups(Backend):
         cmd = "disable"
         if activate == "True":
             cmd = "enable"
-        asyncio.run(self.execute(f"systemctl {cmd} {self.service}"))
+        self.execute(f"systemctl {cmd} {self.service}")
 
     @classmethod
     def check(cls, **kwargs):
@@ -193,7 +234,7 @@ class BackendCups(Backend):
 
     def start(self):
         """ exemple we can create methods for actions call in apply()"""
-        asyncio.run(self.execute("systemctl start {self.service}"))
+        self.execute("systemctl start {self.service}")
 
 
 class BackendUnit(Backend):
@@ -212,6 +253,7 @@ class BackendUnit(Backend):
 class TestWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="pkAction test")
+        self.action = None
 
         self.connect('delete-event', Gtk.main_quit)
         self.connect('destroy', self.on_main_window_destroy)
@@ -237,7 +279,7 @@ class TestWindow(Gtk.Window):
         box.pack_end(btn, expand=True, fill=True, padding=4)
 
 
-        btn = Gtk.Button.new_with_label("ls /root/")
+        btn = Gtk.Button.new_with_label("ls /root/ && env")
         btn.connect("clicked", self.on_apply, 'theme')
         box.pack_end(btn, expand=True, fill=True, padding=4)
         self.btn = btn # for demo validate / unvalidate
@@ -250,29 +292,38 @@ class TestWindow(Gtk.Window):
         """ run actions as root with pkexec
                 - for compact demo : only one on_apply() for all btns
         """
+        if self.action: # wait action end
+            self.display_msg("wait end curent process", Gtk.MessageType.ERROR)
+            return 
         self.btn.set_sensitive(False) # demo : not always this btn
         if data_call == 'xxx':
-            action = BackendUnit(callback_func=self.on_end_process)
-            action.load(unit='sddm', verb='edit')
+            self.action = BackendUnit(callback_func=self.on_end_process)
+            self.action.load(unit='sddm', verb='edit')
             return
 
         if data_call == 'theme':
-            action = BackendTheme()
-            action.on_end = self.on_end_process # pass by init or after
-            action.load(theme='TheBestTheme')
+            self.action = BackendTheme()
+            self.action.on_end = self.on_end_process # pass by init or after
+            self.action.load(theme='TheBestTheme')
+            print("not end pkexec action if async but begin ?") # ok
             return
 
-        action = BackendCups(callback_func=self.on_end_process)
-        action.on_end = self.on_end_process
-        action.load(active=data_call)
+        self.action = BackendCups()
+        self.action.on_end = self.on_end_process
+        self.action.load(active=data_call)
 
+    def set_demo_btn(self, btn):
+        self.btn.set_sensitive(True)  # demo : not always this btn
 
     def on_end_process(self, action, code, stdout, stderr):
-        self.btn.set_sensitive(True)  # demo : not always this btn
-        self.display_msg(f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
+        self.action = None
+        print("gui.on_end_process", action, code)
+        GLib.idle_add(self.set_demo_btn, action)
+        GLib.idle_add(self.display_msg, f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
+        #self.display_msg(f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
 
     def display_msg(self, msg: str, ico=Gtk.MessageType.INFO):
-        print("GUI INFO dialog return")
+        print("display_msg() GUI INFO dialog return")
         if msg == "0":  # show dialog only if error
             return
         dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=ico, buttons=Gtk.ButtonsType.OK, text="Action return:")
