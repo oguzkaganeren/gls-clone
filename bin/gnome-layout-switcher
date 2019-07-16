@@ -206,7 +206,7 @@ class HeaderBarWindow(Gtk.Window):
             for key, img in self.previews.items():
                 shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview.svg")
                 # TODO set color from good .svg
-                replace_in_file(f"/tmp/{key}preview.svg", '#FF0099', newcolor)
+                replace_in_file(f"/tmp/{key}preview.svg", '#16a085', newcolor)
                 img.set_from_file(f"/tmp/{key}preview.svg")
         except FileNotFoundError:
             return False
