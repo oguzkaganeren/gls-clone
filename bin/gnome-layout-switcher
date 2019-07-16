@@ -58,10 +58,10 @@ def disable_wayland():
 
 def set_highlight_color(new_color):
     # If not present, copy the file from default
-    if not Path.is_file(css_file):
-        shutil.copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
-    # Find the current highlight color
     try:
+        if not Path.is_file(css_file):
+            shutil.copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
+        # Find the current highlight color
         with open(css_file) as f:
             file = f.read()
             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
@@ -82,6 +82,8 @@ class HeaderBarWindow(Gtk.Window):
         Gtk.Window.__init__(self, title="Gnome Layout Switcher")
         self.set_border_width(1)
         self.previews = {}
+        self.color_button = None
+        self._current_color = None
         # self.set_default_size(300, 300)
 
         hb = Gtk.HeaderBar()
@@ -100,6 +102,7 @@ class HeaderBarWindow(Gtk.Window):
 
         self.create_page_layout(stack)
         self.create_page_theme(stack)
+        self.currentColor = '' # set colors from .css
 
     def create_page_layout(self, stack):
         # Layout menu
@@ -112,9 +115,7 @@ class HeaderBarWindow(Gtk.Window):
         self.btn_layout_first = None
         for layout in layouts:
             self.create_layout_btn(layout=layout, the_grid=radiobox)
-        # TODO get good theme color and re-set when theme color change
-        self.set_preview_colors('#FF0099')
-                # A button to apply the settings
+
         applybutton = Gtk.Button.new_with_label("Apply")
         applybutton.connect("clicked", self.on_layoutapply_clicked)
         radiobox.attach(applybutton, 1, 6, 2, 1)
@@ -204,7 +205,7 @@ class HeaderBarWindow(Gtk.Window):
         try:
             for key, img in self.previews.items():
                 shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview.svg")
-                # TODO set color from goog .svg
+                # TODO set color from good .svg
                 replace_in_file(f"/tmp/{key}preview.svg", '#FF0099', newcolor)
                 img.set_from_file(f"/tmp/{key}preview.svg")
         except FileNotFoundError:
@@ -239,6 +240,37 @@ class HeaderBarWindow(Gtk.Window):
         event_img.btn = btn    # link btn to box for easy find
         the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
 
+    @property
+    def currentColor(self):
+        return self._current_color
+
+    @currentColor.setter
+    def currentColor(self, value):
+        """ assign new curent color :
+                change preview images
+                change btn theme color
+                not change file.css
+
+            if not value then read value in file.css
+        """
+        if not value:
+            value = '#16a085'
+            try:
+                with open(css_file) as fread:
+                    file = fread.read()
+                    value = re.search("^@define-color.*theme_selected_bg_color.*#(.*);", file)
+                    value = f"#{value.group(1)}"
+            except FileNotFoundError:
+                value = '#16a085'
+        self._current_color = value
+        self.set_preview_colors(self._current_color)
+        ## ??? and (re-)change btn theme color
+        if self.color_button:
+            color = Gdk.RGBA()
+            color.parse(self._current_color)
+            self.color_button.set_rgba(color)
+
+
     # placeholder functions
     def on_layout_toggled(self, button, name):
         state = Opacity.LOW
@@ -264,6 +296,7 @@ class HeaderBarWindow(Gtk.Window):
         col = ( int(x) for x in col )
         col = '#%02x%02x%02x' % tuple(col)
         set_highlight_color(col)
+        self.currentColor = col
 
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
