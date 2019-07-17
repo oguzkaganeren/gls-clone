@@ -243,12 +243,12 @@ class HeaderBarWindow(Gtk.Window):
         btn.connect("toggled", self.on_layout_toggled, layout['id'])
         the_grid.attach(btn, layout['x'], layout['y'], 1, 1)
 
-        resDirectory = Path(__file__).parent / "../data"   # only if we use git, path exists
-        if not resDirectory.resolve().exists():
-            resDirectory = '/usr/share/gls'    # use installed dir by pacman
+        #resDirectory = Path(__file__).parent / "../data"   # only if we use git, path exists
+        #if not resDirectory.resolve().exists():
+        #    resDirectory = '/usr/share/gls'    # use installed dir by pacman
         preview_img = Gtk.Image()
         self.previews[layout['id']] = preview_img
-        preview_img.set_from_file(f"{resDirectory}/pictures/{layout['id']}preview.png")
+        #preview_img.set_from_file(f"{resDirectory}/pictures/{layout['id']}preview.png")
         btn.image = preview_img  # link img to checkbox for easy find
         # reduce opacity of de-selected previews
         if btn.get_active():
