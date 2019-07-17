@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- file in /usr/share/polkit-1/actions/ -->
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN" "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+    <vendor>Manjaro</vendor>
+    <vendor_url>http://www.manjaro.org</vendor_url>
+    <icon_name>gnome</icon_name>
+    <action id="org.manjaro.gnomelayoutswitcher.admin">
+        <description>Run layout-switcher as root</description>
+        <message>Authentication is required to run layout-switcher as root.</message>
+        <defaults>
+            <allow_any>no</allow_any>
+            <allow_inactive>auth_admin_keep</allow_inactive>
+            <allow_active>auth_admin_keep</allow_active>
+        </defaults>
+        <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/gnome-layout-switcher</annotate>
+        <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+    </action>
+</policyconfig>
