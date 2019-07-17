@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import sys
-import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, Gdk
@@ -12,49 +11,71 @@ import re
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
 
+
 class Opacity:
     TOP = 1
     MIDDLE = 0.70
     LOW = 0.45
 
-layouts = [
-    { 'id':'manjaro', 'label':'Manjaro', 'x':1, 'y':0},
-    { 'id':'win', 'label':'Windows', 'x':2, 'y':0},
-    { 'id':'mac', 'label':'MacOs', 'x':1, 'y':3},
-    { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
-]
+
+def get_layouts():
+    return ({'id': 'manjaro', 'label': 'Manjaro', 'x': 1, 'y': 0},
+            {'id': 'win', 'label': 'Windows', 'x': 2, 'y': 0},
+            {'id': 'mac', 'label': ' MacOs', 'x': 1, 'y': 3},
+            {'id': 'gnome', 'label': 'Gnome', 'x': 2, 'y': 3},)
 
 
-def replace_in_file(file_name: str, regex: str, newvalue: str):
+def replace_in_file(file_name: str, regex: str, value: str):
     pattern = re.compile(regex)
     file_old = f"{file_name}~"
     shutil.copy(file_name, file_old)
     with open(file_old, 'tr') as file_read, open(file_name, 'tw') as file_write:
-        for line in file_read:  # here only "line" in ram, not all lines !
-            file_write.write(re.sub(pattern, newvalue, line))
+        # reading lines takes less ram that reading the entire file, but is also slower.
+        for line in file_read:
+            file_write.write(re.sub(pattern, value, line))
     Path(file_old).unlink()
 
+
+def shell(commands):
+    if "--dev" in sys.argv:
+        print("Debug mode on:")
+        print("Simulating shell commands:")
+        print(f"{commands}")
+    else:
+        # only run if not in dev mode
+        if isinstance(commands, str):
+            # if is string then we only have one shell command
+            subprocess.run(commands, shell=True)
+        else:
+            # is a tuple or list
+            for cmd in commands:
+                subprocess.run(cmd, shell=True)
+
+
 def rm_brand():
-    commands = ['pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
-    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css.bak']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    # commands = tuple
+    commands = 'pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
+    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css' \
+    ' ~/.config/gtk-3.0/gtk.css.bak'
+    shell(commands)
+
 
 def rebrand():
-    commands = ['pamac-installer manjaro-gnome-assets manjaro-gdm-branding',
-    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    commands = 'pamac-installer manjaro-gnome-assets manjaro-gdm-branding', 'grep -q \'@define-color theme_selected' \
+                '_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css'
+    shell(commands)
+
 
 def enable_wayland():
-    commands = ['pkexec sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    # commands = string
+    commands = 'pkexec sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf'
+    shell(commands)
+
 
 def disable_wayland():
-    commands = ['pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    commands = 'pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
+    shell(commands)
+
 
 def set_highlight_color(new_color):
     # If not present, copy the file from default
@@ -74,6 +95,7 @@ def set_highlight_color(new_color):
             f.write(newText)
     except FileNotFoundError:
         print('Cannot set color, gtk.css not found')
+
 
 class HeaderBarWindow(Gtk.Window):
 
@@ -115,7 +137,7 @@ class HeaderBarWindow(Gtk.Window):
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
         self.btn_layout_first = None
-        for layout in layouts:
+        for layout in get_layouts():
             self.create_layout_btn(layout=layout, the_grid=radiobox)
 
         applybutton = Gtk.Button.new_with_label("Apply")
@@ -272,9 +294,8 @@ class HeaderBarWindow(Gtk.Window):
             color.parse(self._current_color)
             self.color_button.set_rgba(color)
 
-
-    # placeholder functions
     def on_layout_toggled(self, button, name):
+        # placeholder functions
         state = Opacity.LOW
         if button.get_active():
             state = Opacity.TOP
@@ -282,11 +303,11 @@ class HeaderBarWindow(Gtk.Window):
             print('active layout:', self.layout)
         button.image.set_opacity(state)    # change img opacity from state
 
-    def on_over_img(self, box, event, isOverImage):
+    def on_over_img(self, box, event, is_over_image):
         """on mouse over / out : change opacity"""
         if box.btn.get_active():
             return
-        if isOverImage:
+        if is_over_image:
             box.btn.image.set_opacity(Opacity.MIDDLE)
         else:
             box.btn.image.set_opacity(Opacity.LOW)
@@ -319,11 +340,12 @@ class HeaderBarWindow(Gtk.Window):
         print("Branding was turned", state)
 
     def on_gnometweaks_activated(self, button):
-        subprocess.run('gnome-tweaks &', shell=True)
+        subprocess.Popen('gnome-tweaks', shell=True)
 
-    # Make images clickable
     def on_click_img(self, box, event):
-        box.btn.set_active(True) # change checkbox state and call on_layout_toggled()
+        # Make images clickable
+        # change checkbox state and call on_layout_toggled()
+        box.btn.set_active(True)
 
     def on_layoutapply_clicked(self, button):
         commands = {
@@ -357,7 +379,7 @@ class HeaderBarWindow(Gtk.Window):
         }
 
         for cmd in commands.get(self.layout, ""):
-            subprocess.run(cmd, shell=True)
+            shell(cmd)
         print("Layout applied")
 
 
