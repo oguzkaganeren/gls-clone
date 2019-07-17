@@ -1,57 +1,88 @@
 #!/usr/bin/env python3
 import sys
-import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, Gdk
 import subprocess
-from shutil import copyfile
+import shutil
 from pathlib import Path
 import re
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
 
+
 class Opacity:
     TOP = 1
     MIDDLE = 0.70
     LOW = 0.45
 
-layouts = [
-    { 'id':'manjaro', 'label':'Manjaro', 'x':1, 'y':0},
-    { 'id':'win', 'label':'Windows', 'x':2, 'y':0},
-    { 'id':'mac', 'label':'MacOs', 'x':1, 'y':3},
-    { 'id':'gnome', 'label':'Gnome', 'x':2, 'y':3},
-]
+
+def get_layouts():
+    return ({'id': 'manjaro', 'label': 'Manjaro', 'x': 1, 'y': 0},
+            {'id': 'win', 'label': 'Windows', 'x': 2, 'y': 0},
+            {'id': 'mac', 'label': ' MacOs', 'x': 1, 'y': 3},
+            {'id': 'gnome', 'label': 'Gnome', 'x': 2, 'y': 3},)
+
+
+def replace_in_file(file_name: str, regex: str, value: str):
+    pattern = re.compile(regex)
+    file_old = f"{file_name}~"
+    shutil.copy(file_name, file_old)
+    with open(file_old, 'tr') as file_read, open(file_name, 'tw') as file_write:
+        # reading lines takes less ram that reading the entire file, but is also slower.
+        for line in file_read:
+            file_write.write(re.sub(pattern, value, line))
+    Path(file_old).unlink()
+
+
+def shell(commands):
+    if "--dev" in sys.argv:
+        print("Debug mode on:")
+        print("Simulating shell commands:")
+        print(f"{commands}")
+    else:
+        # only run if not in dev mode
+        if isinstance(commands, str):
+            # if is string then we only have one shell command
+            subprocess.run(commands, shell=True)
+        else:
+            # is a tuple or list
+            for cmd in commands:
+                subprocess.run(cmd, shell=True)
+
 
 def rm_brand():
-    commands = ['pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
-    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css.bak']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    # commands = tuple
+    commands = 'pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
+    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css' \
+    ' ~/.config/gtk-3.0/gtk.css.bak'
+    shell(commands)
+
 
 def rebrand():
-    commands = ['pamac-installer manjaro-gnome-assets manjaro-gdm-branding',
-    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    commands = 'pamac-installer manjaro-gnome-assets manjaro-gdm-branding', 'grep -q \'@define-color theme_selected' \
+                '_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css'
+    shell(commands)
+
 
 def enable_wayland():
-    commands = ['pkexec sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    # commands = string
+    commands = 'pkexec sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf'
+    shell(commands)
+
 
 def disable_wayland():
-    commands = ['pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf']
-    for cmd in commands:
-        subprocess.run(cmd, shell=True)
+    commands = 'pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
+    shell(commands)
+
 
 def set_highlight_color(new_color):
     # If not present, copy the file from default
-    if not Path.is_file(css_file):
-        copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
-    # Find the current highlight color
     try:
+        if not Path.is_file(css_file):
+            shutil.copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
+        # Find the current highlight color
         with open(css_file) as f:
             file = f.read()
             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
@@ -65,21 +96,25 @@ def set_highlight_color(new_color):
     except FileNotFoundError:
         print('Cannot set color, gtk.css not found')
 
+
 class HeaderBarWindow(Gtk.Window):
-        
+
     def __init__(self):
         self.layout = 'manjaro'
         Gtk.Window.__init__(self, title="Gnome Layout Switcher")
         self.set_border_width(1)
+        # TODO set good icon path / test with wayland
+        self.set_icon_from_file(str(Path(__file__).parent.resolve())+"/../data/gnome-layout-switcher.svg")
+        self.previews = {}
+        self.color_button = None
+        self._current_color = None
         # self.set_default_size(300, 300)
 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
         hb.props.title = "Layout Switcher"
         self.set_titlebar(hb)
-        
-        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
-        self.add(vbox)
+
         # Stack settings
         stack = Gtk.Stack()
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
@@ -89,16 +124,24 @@ class HeaderBarWindow(Gtk.Window):
         stack.set_vexpand(True)
         stack.props.valign = Gtk.Align.START
 
+        self.create_page_layout(stack)
+        self.create_page_theme(stack)
+        self.currentColor = '' # set colors from .css
+
+    def create_page_layout(self, stack):
         # Layout menu
+        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
+        self.add(vbox)
+        vbox.attach(stack, 1, 1, 1, 3)
         radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0, margin_top=15)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
         self.btn_layout_first = None
-        for layout in layouts:
-            self.create_layout_btn(layout=layout , the_grid=radiobox)
-                # A button to apply the settings
+        for layout in get_layouts():
+            self.create_layout_btn(layout=layout, the_grid=radiobox)
+
         applybutton = Gtk.Button.new_with_label("Apply")
-        applybutton.connect("clicked", self.on_click_me_clicked)
+        applybutton.connect("clicked", self.on_layoutapply_clicked)
         radiobox.attach(applybutton, 1, 6, 2, 1)
         applybutton.props.valign = Gtk.Align.END
 
@@ -108,7 +151,9 @@ class HeaderBarWindow(Gtk.Window):
         stack_switcher.set_stack(stack)
         stack_switcher.set_hexpand(True)
         stack_switcher.props.halign = Gtk.Align.CENTER
+        vbox.attach(stack_switcher, 1, 0, 1, 1)
 
+    def create_page_theme(self, stack):
         ## The theme tab
         theme_grid = Gtk.Grid(row_spacing=20, margin_left=40, margin_right=40, margin_bottom=0, margin_top=15)
         theme_grid.set_hexpand(False)
@@ -141,7 +186,7 @@ class HeaderBarWindow(Gtk.Window):
         wayland_label.props.halign = Gtk.Align.START
 
         theme_button = Gtk.Button.new_with_label("Open")
-        theme_button.connect("clicked", self.on_button_activated)
+        theme_button.connect("clicked", self.on_gnometweaks_activated)
         theme_label = Gtk.Label()
         theme_label.set_markup("        Theme settings")
         theme_label.props.halign = Gtk.Align.START
@@ -177,21 +222,32 @@ class HeaderBarWindow(Gtk.Window):
         theme_grid.attach(self.color_button, 1, 3, 1, 1)
         theme_grid.attach(color_label, 3, 3, 2, 1)
 
-        # Pack everything to a box
-        vbox.attach(stack_switcher, 1, 0, 1, 1)
-        vbox.attach(stack,  1, 1, 1, 3)
-    # Create the desktop grid
+    def set_preview_colors(self, newcolor: str):
+        resDirectory = Path(__file__).parent / "../data"   # only if we use git, path exists
+        if not resDirectory.resolve().exists():
+            resDirectory = '/usr/share/gls'
+        try:
+            for key, img in self.previews.items():
+                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview.svg")
+                # TODO set color from good .svg
+                replace_in_file(f"/tmp/{key}preview.svg", '#16a085', newcolor)
+                img.set_from_file(f"/tmp/{key}preview.svg")
+        except FileNotFoundError:
+            return False
+
     def create_layout_btn(self, layout, the_grid):
+        """ Create desktop element in grid """
         btn = Gtk.RadioButton.new_with_label_from_widget(self.btn_layout_first, layout['label'])
         if not self.btn_layout_first:
             self.btn_layout_first = btn
-        btn.connect("toggled", self.on_button_toggled, layout['id'])
+        btn.connect("toggled", self.on_layout_toggled, layout['id'])
         the_grid.attach(btn, layout['x'], layout['y'], 1, 1)
-        # Set preview images
-        resDirectory = Path('../data').resolve()   # only if we use git, path exists 
-        if not resDirectory.exists():
+
+        resDirectory = Path(__file__).parent / "../data"   # only if we use git, path exists
+        if not resDirectory.resolve().exists():
             resDirectory = '/usr/share/gls'    # use installed dir by pacman
         preview_img = Gtk.Image()
+        self.previews[layout['id']] = preview_img
         preview_img.set_from_file(f"{resDirectory}/pictures/{layout['id']}preview.png")
         btn.image = preview_img  # link img to checkbox for easy find
         # reduce opacity of de-selected previews
@@ -201,26 +257,57 @@ class HeaderBarWindow(Gtk.Window):
             preview_img.set_opacity(0.65)
         # make preview images clickable
         event_img = Gtk.EventBox()
-        event_img.connect("button-release-event",self.on_click_img)  # click in box
-        event_img.connect("enter-notify-event",self.on_over_img, True)  # mouse over box
-        event_img.connect("leave-notify-event",self.on_over_img, False)  # mouse out box
+        event_img.connect("button-release-event", self.on_click_img)  # click in box
+        event_img.connect("enter-notify-event", self.on_over_img, True)  # mouse over box
+        event_img.connect("leave-notify-event", self.on_over_img, False)  # mouse out box
         event_img.add(preview_img)    # add img in box
         event_img.btn = btn    # link btn to box for easy find
         the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
 
-    # placeholder functions
-    def on_button_toggled(self, button, name):
+    @property
+    def currentColor(self):
+        return self._current_color
+
+    @currentColor.setter
+    def currentColor(self, value):
+        """ assign new curent color :
+                change preview images
+                change btn theme color
+                not change file.css
+
+            if not value then read value in file.css
+        """
+        if not value:
+            value = '#16a085'
+            try:
+                with open(css_file) as fread:
+                    file = fread.read()
+                    value = re.search("^@define-color.*theme_selected_bg_color.*#(.*);", file)
+                    value = f"#{value.group(1)}"
+            except FileNotFoundError:
+                value = '#16a085'
+        self._current_color = value
+        self.set_preview_colors(self._current_color)
+        ## ??? and (re-)change btn theme color
+        if self.color_button:
+            color = Gdk.RGBA()
+            color.parse(self._current_color)
+            self.color_button.set_rgba(color)
+
+    def on_layout_toggled(self, button, name):
+        # placeholder functions
         state = Opacity.LOW
         if button.get_active():
             state = Opacity.TOP
             self.layout = name
             print('active layout:', self.layout)
         button.image.set_opacity(state)    # change img opacity from state
-    def on_over_img(self, box, event, isOverImage):
+
+    def on_over_img(self, box, event, is_over_image):
         """on mouse over / out : change opacity"""
         if box.btn.get_active():
             return
-        if isOverImage:
+        if is_over_image:
             box.btn.image.set_opacity(Opacity.MIDDLE)
         else:
             box.btn.image.set_opacity(Opacity.LOW)
@@ -232,7 +319,8 @@ class HeaderBarWindow(Gtk.Window):
         col = ( int(x) for x in col )
         col = '#%02x%02x%02x' % tuple(col)
         set_highlight_color(col)
-        
+        self.currentColor = col
+
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
@@ -251,15 +339,15 @@ class HeaderBarWindow(Gtk.Window):
             rm_brand()
         print("Branding was turned", state)
 
-    def on_button_activated(self, button):
-        cmd = 'gnome-tweaks &'
-        subprocess.run(cmd, shell=True)
+    def on_gnometweaks_activated(self, button):
+        subprocess.Popen('gnome-tweaks', shell=True)
 
-    # Make images clickable
     def on_click_img(self, box, event):
-        box.btn.set_active(True) # change checkbox state and call on_button_toggled()
+        # Make images clickable
+        # change checkbox state and call on_layout_toggled()
+        box.btn.set_active(True)
 
-    def on_click_me_clicked(self, button):
+    def on_layoutapply_clicked(self, button):
         commands = {
             'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
@@ -291,7 +379,7 @@ class HeaderBarWindow(Gtk.Window):
         }
 
         for cmd in commands.get(self.layout, ""):
-            subprocess.run(cmd, shell=True)
+            shell(cmd)
         print("Layout applied")
 
 
