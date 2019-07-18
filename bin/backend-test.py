@@ -6,7 +6,7 @@ import subprocess
 import threading
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GObject
 from gi.overrides import GLib
 
 
@@ -67,17 +67,20 @@ class PopenWrapper(object):
 ### system backend
 ###############################
 
-class Backend:
+class Backend(GObject.GObject):
     admin = True
 
-    def __init__(self, callback_func=None):
+    __gsignals__ = {
+        'endprocess': (GObject.SignalFlags.RUN_FIRST, None, ())
+    }
+
+    def __init__(self):
         """ by defaut use async calls """
+        GObject.GObject.__init__(self)
         self.asynchro = True
         self.code = -1    # not run
         self.stdout = ""
         self.stderr = ""
-        if callback_func:
-            self.on_end = callback_func
 
     @classmethod
     def check(cls, **kwargs):
@@ -157,12 +160,12 @@ class Backend:
 
         if '--admin' in sys.argv:
             exit(self.code)
-        if self.on_end:
-            self.on_end(self.sign, self.code, self.stdout, self.stderr)
+        self.log("emit signal endprocess for gui...", self.code, self.stderr)
+        self.emit('endprocess')
 
-    def on_end(self, action: str, code: int, stdout: str, stderr: str):
-        """ callback for gui """
-        pass
+    def do_endprocess(self):
+        """ recept emit signal endprocess """
+        return
 
     @property
     def sign(self):
@@ -192,6 +195,8 @@ class Backend:
         else:
             print("debug info: Not admin, we use gui ...")
             return False
+
+GObject.type_register(Backend)
 
 ###############################
 # examples backend class
@@ -297,35 +302,36 @@ class TestWindow(Gtk.Window):
             return 
         self.btn.set_sensitive(False) # demo : not always this btn
         if data_call == 'xxx':
-            self.action = BackendUnit(callback_func=self.on_end_process)
+            self.action = BackendUnit()
+            self.action.connect('endprocess', self.on_endprocess)
             self.action.load(unit='sddm', verb='edit')
             return
 
         if data_call == 'theme':
             self.action = BackendTheme()
-            self.action.on_end = self.on_end_process # pass by init or after
+            self.action.connect('endprocess', self.on_endprocess)
             self.action.load(theme='TheBestTheme')
             print("not end pkexec action if async but begin ?") # ok
             return
 
         self.action = BackendCups()
-        self.action.on_end = self.on_end_process
+        self.action.connect('endprocess', self.on_endprocess)
         self.action.load(active=data_call)
 
     def set_demo_btn(self, btn):
         self.btn.set_sensitive(True)  # demo : not always this btn
 
-    def on_end_process(self, action, code, stdout, stderr):
+    def on_endprocess(self, action):
+        """ callback end pkexec process backend """
         self.action = None
-        print("gui.on_end_process", action, code)
         GLib.idle_add(self.set_demo_btn, action)
-        GLib.idle_add(self.display_msg, f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
-        #self.display_msg(f"End process: {action}:{code}\n\n{stdout}\n\nSTDERR:\n{stderr}")
+        if action:
+            print("gui event on_endprocess()", action.sign, action.code, action.stderr)
+            #if action.code != 0 :    # show dialog only if error
+            GLib.idle_add(self.display_msg, f"End process: {action.sign}:{action.code}\n\n{action.stdout}\n\nSTDERR:\n{action.stderr}")
 
     def display_msg(self, msg: str, ico=Gtk.MessageType.INFO):
-        print("display_msg() GUI INFO dialog return")
-        if msg == "0":  # show dialog only if error
-            return
+        """ GUI INFO dialog """
         dialog = Gtk.MessageDialog(parent=self, flags=0, message_type=ico, buttons=Gtk.ButtonsType.OK, text="Action return:")
         dialog.format_secondary_text(msg)
         dialog.run()
