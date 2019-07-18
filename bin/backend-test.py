@@ -82,6 +82,15 @@ class Backend(GObject.GObject):
         self.stdout = ""
         self.stderr = ""
 
+    def __int__(self):
+        return self.code
+
+    def __call__(self):
+        return self.code
+
+    def __str__(self):
+        return f"{{\n 'class:': {self.sign}\n 'return': {self.code}\n 'err': {self.stderr.strip()}\n}}"
+
     @classmethod
     def check(cls, **kwargs):
         """
@@ -239,7 +248,7 @@ class BackendCups(Backend):
 
     def start(self):
         """ exemple we can create methods for actions call in apply()"""
-        self.execute("systemctl start {self.service}")
+        self.execute(f"systemctl start {self.service}")
 
 
 class BackendUnit(Backend):
@@ -327,6 +336,9 @@ class TestWindow(Gtk.Window):
         GLib.idle_add(self.set_demo_btn, action)
         if action:
             print("gui event on_endprocess()", action.sign, action.code, action.stderr)
+            print(action)
+            if action() > 0:
+                print("return (int) code: ", int(action), action())
             #if action.code != 0 :    # show dialog only if error
             GLib.idle_add(self.display_msg, f"End process: {action.sign}:{action.code}\n\n{action.stdout}\n\nSTDERR:\n{action.stderr}")
 
