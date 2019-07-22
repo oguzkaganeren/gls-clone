@@ -257,9 +257,9 @@ class HeaderBarWindow(Gtk.Window):
         btn.image = preview_img  # link img to checkbox for easy find
         # reduce opacity of de-selected previews
         if btn.get_active():
-            preview_img.set_opacity(1)
+            preview_img.set_opacity(Opacity.TOP)
         else:
-            preview_img.set_opacity(0.65)
+            preview_img.set_opacity(Opacity.MIDDLE)
         # make preview images clickable
         event_img = Gtk.EventBox()
         event_img.connect("button-release-event", self.on_click_img)  # click in box
