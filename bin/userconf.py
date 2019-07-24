@@ -31,6 +31,7 @@ class UserConf():
         """
         enter in "with" ...
         """
+
         self.config = configparser.ConfigParser()
         self.config.read(self.inifile)
         self.modified = False
@@ -50,48 +51,70 @@ class UserConf():
             with open(self.inifile, 'wt') as configfile:
                 self.config.write(configfile)
 
-    def write(self, fields: dict, title: str = ''):
+    def _safe_section_name(self, section: str) ->str:
+        """
+            use only uppercase
+
+            Returns: default section if empty
+        """
+
+        if not section:
+            section = self.KEY
+        return section.upper()
+
+    def write(self, fields: dict, section: str = ''):
         """
         set values in .conf
 
         Args:
             fields (dict): datas
-            title (str, optional): section name. Default is self.KEY
+            section (str, optional): section name. Default is self.KEY
         """
 
-        if not title:
-            title = self.KEY
-        title = title.upper()
+        section = self._safe_section_name(section)
         try:
-            section = self.config[title]
+            section_object = self.config[section]
         except KeyError:
-            self.config[title] = {}
-        section = self.config[title]
+            self.config[section] = {}
+        section_object = self.config[section]
 
         for key, value in fields.items():
-            section[key] = str(value)
+            section_object[key] = str(value)
         self.modified = True
 
-    def reads(self, title: str = '') -> namedtuple:
+    def reads(self, section: str = '') -> namedtuple:
         """
         load all keys section
-        """
-        if not title:
-            title = self.KEY
-        title = title.upper()
-        try:
-            datas = dict(self.config.items(title))
-            return namedtuple(title, datas.keys())(*datas.values())
-        except (KeyError, configparser.NoSectionError) as err:
-            raise KeyError(f"Section \"{title}\" not exists") from err
 
-    def read(self, key: str, title: str = '', boolean=False, default=None):
+        Returns:
+            namedtuple, values converted
+
+        Raises:
+            KeyError: section not exits
+        """
+
+        section = self._safe_section_name(section)
+        try:
+            datas = dict(self.config.items(section))
+            # convert types
+            for key, value in datas.items():
+                if value == "True":
+                    datas[key] = True
+                if value == "False":
+                    datas[key] = False
+                if value.isdigit():
+                    datas[key] = int(value)
+            return namedtuple(section, datas.keys())(*datas.values())
+        except (KeyError, configparser.NoSectionError) as err:
+            raise KeyError(f"Section \"{section}\" not exists") from err
+
+    def read(self, key: str, section: str = '', boolean=False, default=None):
         """
         read a key in .conf file
 
         Args:
             key (str): key
-            title (str, optional): section name. Default is self.KEY
+            section (str, optional): section name. Default is self.KEY
             boolean (bool, optional): evaluate strings "True,False"
             default (optional): default return if key not exists
 
@@ -99,18 +122,12 @@ class UserConf():
             [string, bool, optional]: value for key
         """
 
-        if not title:
-            title = self.KEY
-        title = title.upper()
+        section = self._safe_section_name(section)
         try:
-            return self.config.getboolean(title, key) if boolean else self.config.get(title, key)
+            return self.config.getboolean(section, key) if boolean else self.config.get(section, key)
         except KeyError:
             return default or None
 
-
-class WinConf(UserConf):
-    def write_pos(self):
-        pass
 
 
 if __name__ == '__main__':
@@ -125,7 +142,7 @@ if __name__ == '__main__':
     with user:
         user.write({'kde': 'gnome'})   # in default section
         user.write({'first': 'True'}, 'TEST')
-        user.write({'x': 55, 'y':199}, 'SIZE')
+        user.write({'x': 55, 'y':199, 'z':True}, 'SIZE')
 
 
     # add new keys and change values
@@ -146,7 +163,8 @@ if __name__ == '__main__':
             print("[TEST] want = True")
 
         position = user.reads('SIZE')
-        print(type(position))
+        print(position, type(position.x), type(position.y), type(position.z))
+        print(type(position), position.x, position.y,  position.z)
         print("size:", position, position.x, position.y)
 
         print("section not exists ?")

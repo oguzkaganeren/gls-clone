@@ -306,8 +306,8 @@ class TestWindow(Gtk.Window):
         with UserConf('BACKEND-TEST') as conf:
             try:
                 position = conf.reads('POSITION')
-                self.set_size_request(int(position.w), int(position.h))
-                self.move(int(position.x), int(position.y))
+                self.set_size_request(position.w, position.h)
+                self.move(position.x, position.y)
             except KeyError as err:
                 self.set_default_size(400, 400)
                 self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
