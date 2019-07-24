@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import threading
 import gi
+from userconf import UserConf
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio, GObject
 from gi.overrides import GLib
@@ -128,7 +129,11 @@ class Backend(GObject.GObject):
         return self.code == 0
 
     def _execute_pkexec(self, command: str):
-        """ run self script async call"""
+        """
+        run self script async call
+
+        for wayland, run before ??? `xhost +si:localuser:root` if app is gtk gui
+        """
         pkexec = PopenWrapper()
         pkexec.on_exit = self._on_end_process
         pkexec.run(command)
@@ -269,7 +274,7 @@ class TestWindow(Gtk.Window):
         super().__init__(title="pkAction test")
         self.action = None
 
-        self.connect('delete-event', Gtk.main_quit)
+        self.connect('delete-event', self.on_exit)
         self.connect('destroy', self.on_main_window_destroy)
 
         box = Gtk.VBox(spacing=20)
@@ -298,9 +303,27 @@ class TestWindow(Gtk.Window):
         box.pack_end(btn, expand=True, fill=True, padding=4)
         self.btn = btn # for demo validate / unvalidate
 
-        self.set_size_request(300, 100)
-        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+        with UserConf('BACKEND-TEST') as conf:
+            try:
+                position = conf.reads('POSITION')
+                self.set_size_request(int(position.w), int(position.h))
+                self.move(int(position.x), int(position.y))
+            except KeyError as err:
+                self.set_default_size(400, 400)
+                self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
+
         self.show_all()
+
+    def on_exit(self, widget, event=None, data=None):
+        with UserConf('BACKEND-TEST') as conf:
+            conf.write({
+                'w': self.get_size().width,
+                'h': self.get_size().height,
+                'x': self.get_position()[0],
+                'y': self.get_position()[1],
+                },
+                'POSITION')
+        Gtk.main_quit()
 
     def on_apply(self, button, data_call):
         """ run actions as root with pkexec
