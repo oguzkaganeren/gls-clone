@@ -120,6 +120,14 @@ class HeaderBarWindow(Gtk.Window):
         hb.props.title = "Layout Switcher"
         self.set_titlebar(hb)
 
+        # Determine preview color
+        self.default_color = self.get_style_context().get_color(Gtk.StateType.NORMAL)
+        print(self.default_color)
+        if self.default_color.red < 0.5 and self.default_color.blue < 0.5:
+            self.default_color = '#000000'
+        else:
+            self.default_color = '#ffffff'
+
         # Stack settings
         stack = Gtk.Stack()
         stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
@@ -128,7 +136,6 @@ class HeaderBarWindow(Gtk.Window):
         stack.set_vhomogeneous(False)
         stack.set_vexpand(True)
         stack.props.valign = Gtk.Align.START
-
         self.create_page_layout(stack)
         self.create_page_theme(stack)
         self.currentColor = '' # set colors from .css
@@ -237,9 +244,13 @@ class HeaderBarWindow(Gtk.Window):
             resDirectory = '/usr/share/gls'
         try:
             for key, img in self.previews.items():
+                # Normal preview
                 shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview.svg")
-                replace_in_file(f"/tmp/{key}preview.svg", '#16a085', newcolor)
+                replace_in_file(f"/tmp/{key}preview.svg", '#16a085', self.default_color)
                 img.set_from_file(f"/tmp/{key}preview.svg")
+                # Selected preview
+                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview_selected.svg")
+                replace_in_file(f"/tmp/{key}preview_selected.svg", '#16a085', newcolor)
         except FileNotFoundError:
             return False
 
@@ -310,7 +321,11 @@ class HeaderBarWindow(Gtk.Window):
             state = Opacity.TOP
             self.layout = name
             print('active layout:', self.layout)
+            button.image.set_from_file(f"/tmp/{self.layout}preview_selected.svg")
+        else:
+            button.image.set_from_file(f"/tmp/{self.layout}preview.svg")
         button.image.set_opacity(state)    # change img opacity from state
+        
 
     def on_over_img(self, box, event, is_over_image):
         """ on mouse over / out : change opacity """
