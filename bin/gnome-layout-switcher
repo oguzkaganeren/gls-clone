@@ -7,15 +7,15 @@ import subprocess
 import shutil
 from pathlib import Path
 import re
+import requests
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
 
-
 class Opacity:
     TOP = 1
-    MIDDLE = 0.70
-    LOW = 0.45
+    MIDDLE = 0.9
+    LOW = 0.7
 
 
 def get_layouts():
@@ -52,17 +52,29 @@ def shell(commands):
             for cmd in commands:
                 subprocess.run(cmd, shell=True)
 
+def download_extension(extension)
+    gnome_version = subprocess.check_output('DISPLAY=":0" gnome-shell --version | tr -cd "0-9." | cut -d'.' -f1,2', shell=True)
+    install_path = Path("~/.local/share/gnome-shell/extensions/").expanduser()
+    tmp_zip = subprocess.check_output('mktemp -t ext-XXXXXXXX.zip')
+    url_json = f'https://extensions.gnome.org/extension-info/?uuid={extension}&shell_version={gnome_version}'
+    extension_url = subprocess.check_output('curl -s "${JSON}" | sed -e "s/^.*download_url[\": ]*\([^\"]*\).*$/\1/"', shell=True)
+    extension_url = f'https://extensions.gnome.org/{extension_url}'
+    commands = [f"wget --header='Accept-Encoding:none' -O {tmp_zip} {extension_url}",
+    f"mkdir -p {install_path}/{extension}",
+    f"unzip -oq {tmp_zip} -d {install_path}/{extension}",
+    f"chmod +r {install_path}/{extension}/*"]
+    shell(commands)
 
 def rm_brand():
     # commands = tuple
-    commands = 'pamac-installer --remove manjaro-gnome-assets manjaro-gdm-branding',
+    commands = 'pamac-installer --remove manjaro-gdm-branding',
     'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css' \
     ' ~/.config/gtk-3.0/gtk.css.bak'
     shell(commands)
 
 
 def rebrand():
-    commands = 'pamac-installer manjaro-gnome-assets manjaro-gdm-branding', 'grep -q \'@define-color theme_selected' \
+    commands = 'pamac-installer manjaro-gdm-branding', 'grep -q \'@define-color theme_selected' \
                 '_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css'
     shell(commands)
 
@@ -77,6 +89,44 @@ def disable_wayland():
     commands = 'pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
     shell(commands)
 
+def get_extensions(chosen_layout):
+    
+    extensions = {
+            'manjaro': (
+                'dash-to-dock@micxgx.gmail.com',
+                'user-theme@gnome-shell-extensions.gcampax.github.com',
+                'drive-menu@gnome-shell-extensions.gcampax.github.com',
+                'appindicatorsupport@rgcjonas.gmail.com',
+                'pamac-updates@manjaro.org',
+                'arc-menu@linxgem33.com'
+            ),
+            'win': (
+                'dash-to-panel@jderose9.github.com',
+                'user-theme@gnome-shell-extensions.gcampax.github.com',
+                'appindicatorsupport@rgcjonas.gmail.com',
+                'pamac-updates@manjaro.org',
+                'arc-menu@linxgem33.com'
+            ),
+            'mac' : (
+                'dash-to-dock@micxgx.gmail.com',
+                'user-theme@gnome-shell-extensions.gcampax.github.com',
+                'unite@hardpixel.eu',
+                'pamac-updates@manjaro.org'
+            ),
+            'gnome' : (
+                'pamac-updates@manjaro.org',
+                'user-theme@gnome-shell-extensions.gcampax.github.com',
+            )
+    }
+    #extensions.get(chosen_layout)
+    for ext in extensions.get(chosen_layout):
+        user_path = Path(f"~/.local/share/gnome-shell/extensions/{ext}").expanduser()
+        sys_path = Path(f"/usr/share/gnome-shell/extensions/{ext}")
+        if not Path.is_dir(sys_path) and not Path.is_dir(Path(user_path).expanduser()):
+            print(sys_path)
+            print(user_path)
+        else:
+            print('Already installed', ext)
 
 def set_highlight_color(new_color):
     """ set highlight color in user file gtk.css """
@@ -403,6 +453,8 @@ class HeaderBarWindow(Gtk.Window):
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             )
         }
+
+        get_extensions(self.layout)
 
         for cmd in commands.get(self.layout, ""):
             shell(cmd)
