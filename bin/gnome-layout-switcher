@@ -52,8 +52,8 @@ def shell(commands):
             for cmd in commands:
                 subprocess.run(cmd, shell=True)
 
-def download_extension(extension)
-    gnome_version = subprocess.check_output('DISPLAY=":0" gnome-shell --version | tr -cd "0-9." | cut -d'.' -f1,2', shell=True)
+def download_extension(extension):
+    gnome_version = subprocess.check_output('DISPLAY=":0" gnome-shell --version | tr -cd "0-9." | cut -d"." -f1,2', shell=True)
     install_path = Path("~/.local/share/gnome-shell/extensions/").expanduser()
     tmp_zip = subprocess.check_output('mktemp -t ext-XXXXXXXX.zip')
     url_json = f'https://extensions.gnome.org/extension-info/?uuid={extension}&shell_version={gnome_version}'
