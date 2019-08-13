@@ -52,20 +52,6 @@ def shell(commands):
             for cmd in commands:
                 subprocess.run(cmd, shell=True)
 
-# def download_extension(extension):
-#     gnome_version = subprocess.check_output('DISPLAY=":0" gnome-shell --version | tr -cd "0-9." | cut -d"." -f1,2', shell=True).decode("utf-8").strip()
-#     install_path = Path("~/.local/share/gnome-shell/extensions/").expanduser()
-#     tmp_zip = subprocess.check_output('mktemp -t ext-XXXXXXXX.zip', shell=True).decode("utf-8").strip()
-#     url_json = f'https://extensions.gnome.org/extension-info/?uuid={extension}&shell_version={gnome_version}'
-#     extension_url = subprocess.check_output(f'curl -s {url_json} | sed -e \'s/^.*download_url[\": ]*\([^\"]*\).*$/\1/\'', shell=True)
-#     extension_url = f'https://extensions.gnome.org/{extension_url}'
-#     print(f"extension is {extension_url}")
-#     commands = [f"wget --header='Accept-Encoding:none' -O {tmp_zip} {extension_url}",
-#     f"mkdir -p {install_path}/{extension}",
-#     f"unzip -oq {tmp_zip} -d {install_path}/{extension}",
-#     f"chmod +r {install_path}/{extension}/*"]
-#     shell(commands)
-
 def rm_brand():
     # commands = tuple
     commands = 'pamac-installer --remove manjaro-gdm-branding',
@@ -91,7 +77,7 @@ def disable_wayland():
     shell(commands)
 
 def get_extensions(chosen_layout):
-    
+    # List needed extensions
     extensions = {
             'manjaro': (
                 'dash-to-dock@micxgx.gmail.com',
@@ -115,7 +101,7 @@ def get_extensions(chosen_layout):
                 'user-theme@gnome-shell-extensions.gcampax.github.com',
             )
     }
-
+    # List needed extension packages
     ext_pkgs = {
             'manjaro': ['gnome-shell-extension-dash-to-dock', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
             'win': ['gnome-shell-extension-dash-to-panel', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
@@ -123,8 +109,8 @@ def get_extensions(chosen_layout):
             'gnome' : ['gnome-shell-extensions']
     }
 
-    #extensions.get(chosen_layout)
     pkgs_missing = False
+    # Check if extensions are missing
     for ext in extensions.get(chosen_layout):
         user_path = Path(f"~/.local/share/gnome-shell/extensions/{ext}").expanduser()
         sys_path = Path(f"/usr/share/gnome-shell/extensions/{ext}")
@@ -132,6 +118,7 @@ def get_extensions(chosen_layout):
             pkgs_missing = True
         else:
             print('Already installed', ext)
+    # Install missing packages with pamac
     if pkgs_missing:
         pkg_list = []
         for pkg in ext_pkgs.get(chosen_layout):
@@ -164,6 +151,12 @@ def set_highlight_color(new_color):
     except FileNotFoundError:
         print('Cannot set color, gtk.css not found')
 
+def rgba_to_hex(col):
+    col.to_string()[4:-1:]
+    col = self.default_color.split(',')
+    col = (int(x) for x in col)
+    col = '#%02x%02x%02x' % tuple(col)
+    return col
 
 class HeaderBarWindow(Gtk.Window):
 
@@ -184,13 +177,14 @@ class HeaderBarWindow(Gtk.Window):
         hb.props.title = "Layout Switcher"
         self.set_titlebar(hb)
 
-        # Determine preview color
-        self.default_color = self.get_style_context().get_color(Gtk.StateType.NORMAL)
-        print(self.default_color)
-        if self.default_color.red < 0.5 and self.default_color.blue < 0.5:
-            self.default_color = '#000000'
-        else:
-            self.default_color = '#ffffff'
+        # Determine preview color and highllight color
+
+        rgba = self.get_style_context().lookup_color('theme_fg_color').color
+        self.default_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
+
+        rgba = self.get_style_context().lookup_color('theme_selected_bg_color').color
+        self.highlight_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
+        
 
         # Stack settings
         stack = Gtk.Stack()
@@ -203,7 +197,7 @@ class HeaderBarWindow(Gtk.Window):
         self.create_page_layout(stack)
         self.create_page_theme(stack)
         self.currentColor = '' # set colors from .css
-
+        
     def create_page_layout(self, stack):
         """ Layout menu """
         vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
@@ -269,16 +263,13 @@ class HeaderBarWindow(Gtk.Window):
 
         # Color picker
         self.color_button = Gtk.ColorButton()
-        # with a default color (blue, in this instance)
-        #TODO use same code in set_highlight_color()
         if Path.is_file(css_file):
             with open(css_file) as f:
                 file = f.read()
                 current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-                #TODO use group(1)
                 current_color = current_color.group(0)[38:-1]
         else:
-            current_color = '#16a085'
+            current_color = self.highlight_color
         color = Gdk.RGBA()
         color.parse(current_color)
         color.to_string()
@@ -365,7 +356,7 @@ class HeaderBarWindow(Gtk.Window):
                     value = re.search("^@define-color.*theme_selected_bg_color.*#(.*);", file)
                     value = f"#{value.group(1)}"
             except FileNotFoundError:
-                value = '#16a085'
+                value = self.highlight_color
         self._current_color = value
         self.set_preview_colors(self._current_color)
         ## ??? and (re-)change btn theme color
