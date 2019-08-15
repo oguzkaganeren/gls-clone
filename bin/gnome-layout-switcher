@@ -169,7 +169,6 @@ class HeaderBarWindow(Gtk.Window):
             self.set_icon_from_file(str(Path(__file__).parent.resolve())+"/../data/gnome-layout-switcher.svg")
         except Exception:
             self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg")
-        self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg")
         
         self.previews = {}
         self.color_button = None
