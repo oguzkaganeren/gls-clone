@@ -165,8 +165,12 @@ class HeaderBarWindow(Gtk.Window):
         self.layout = 'manjaro'
         Gtk.Window.__init__(self, title="Gnome Layout Switcher")
         self.set_border_width(1)
-        # TODO create propety data_dir / test with wayland
-        self.set_icon_from_file(str(Path(__file__).parent.resolve())+"/../data/gnome-layout-switcher.svg")
+        try: 
+            self.set_icon_from_file(str(Path(__file__).parent.resolve())+"/../data/gnome-layout-switcher.svg")
+        except Exception:
+            self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg")
+        self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg")
+        
         self.previews = {}
         self.color_button = None
         self._current_color = None
