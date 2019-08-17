@@ -367,6 +367,8 @@ class HeaderBarWindow(Gtk.Window):
                     value = f"#{value.group(1)}"
             except FileNotFoundError:
                 value = self.highlight_color
+            except AttributeError:
+                value = self.highlight_color
         self._current_color = value
         self.set_preview_colors(self._current_color)
         ## ??? and (re-)change btn theme color
