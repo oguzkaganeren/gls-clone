@@ -141,13 +141,17 @@ def set_highlight_color(new_color):
             file = f.read()
             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
             # TODO use group(1)
-            current_color = current_color.group(0)[38:-1]
-            # Replace the old color with new one
-        with open(css_file) as f:
-            newText = f.read().replace(current_color, new_color, 2)
-        # Write the changes
-        with open(css_file, "w") as f:
-            f.write(newText)
+            try:
+                current_color = current_color.group(0)[38:-1]
+                # Replace the old color with new one
+                with open(css_file) as f:
+                    newText = f.read().replace(current_color, new_color, 2)
+                # Write the changes
+                with open(css_file, "w") as f:
+                    f.write(newText)
+            except AttributeError:
+                print('Cannot set color. Copy /usr/share/gtk-3.0/gtk.css to ~/.config/gtk-3.0/gtk.css to continue')            
+
     except FileNotFoundError:
         print('Cannot set color, gtk.css not found')
 
@@ -267,10 +271,13 @@ class HeaderBarWindow(Gtk.Window):
         # Color picker
         self.color_button = Gtk.ColorButton()
         if Path.is_file(css_file):
-            with open(css_file) as f:
-                file = f.read()
-                current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-                current_color = current_color.group(0)[38:-1]
+            try:
+                with open(css_file) as f:
+                    file = f.read()
+                    current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
+                    current_color = current_color.group(0)[38:-1]
+            except AttributeError:
+                current_color = self.highlight_color    
         else:
             current_color = self.highlight_color
         color = Gdk.RGBA()
@@ -359,6 +366,8 @@ class HeaderBarWindow(Gtk.Window):
                     value = re.search("^@define-color.*theme_selected_bg_color.*#(.*);", file)
                     value = f"#{value.group(1)}"
             except FileNotFoundError:
+                value = self.highlight_color
+            except AttributeError:
                 value = self.highlight_color
         self._current_color = value
         self.set_preview_colors(self._current_color)
