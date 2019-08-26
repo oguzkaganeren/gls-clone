@@ -142,7 +142,7 @@ def set_highlight_color(new_color):
             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
             # TODO use group(1)
             try:
-                current_color = current_color.group(0)[38:-1]
+                current_color = current_color.group(1)
                 # Replace the old color with new one
                 with open(css_file) as f:
                     newText = f.read().replace(current_color, new_color, 2)
@@ -275,7 +275,7 @@ class HeaderBarWindow(Gtk.Window):
                 with open(css_file) as f:
                     file = f.read()
                     current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-                    current_color = current_color.group(0)[38:-1]
+                    current_color = current_color.group(1)
             except AttributeError:
                 current_color = self.highlight_color    
         else:
