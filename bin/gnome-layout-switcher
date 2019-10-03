@@ -54,7 +54,7 @@ def shell(commands):
 
 def rm_brand():
     # commands = tuple
-    commands = 'pamac-installer --remove manjaro-gdm-branding',
+    commands = 'pkexec pacman --noconfirm -Rdd manjaro-gdm-branding manjaro-gnome-assets',
     'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css' \
     ' ~/.config/gtk-3.0/gtk.css.bak'
     shell(commands)
