@@ -54,7 +54,7 @@ def shell(commands):
 
 def rm_brand():
     # commands = tuple
-    commands = 'pkexec pacman --noconfirm -Rdd manjaro-gdm-branding manjaro-gnome-assets',
+    commands = 'pamac-installer --remove manjaro-gdm-branding manjaro-gnome-assets',
     'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css' \
     ' ~/.config/gtk-3.0/gtk.css.bak'
     shell(commands)
@@ -236,10 +236,11 @@ class HeaderBarWindow(Gtk.Window):
         theme_grid.set_hexpand(False)
         theme_grid.props.valign = Gtk.Align.START
         theme_grid.set_vexpand(True)
-        stack.add_titled(theme_grid, "theme_grid", "Theme")
+        stack.add_titled(theme_grid, "theme_grid", "Settings")
 
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
+        manjaro_switch.set_hexpand(False)
         branding_enabled = subprocess.run('pacman -Qq manjaro-gnome-assets &>/dev/null', shell=True)
         if branding_enabled.returncode == 0:
             manjaro_switch.set_active(True)
@@ -252,6 +253,7 @@ class HeaderBarWindow(Gtk.Window):
 
         # wayland toggle
         wayland_switch = Gtk.Switch()
+        wayland_switch.set_hexpand(False)
         wayland_enabled = subprocess.run('grep -q "^WaylandEnable=false" /etc/gdm/custom.conf', shell=True)
         if wayland_enabled.returncode == 1:
             wayland_switch.set_active(True)
@@ -262,44 +264,85 @@ class HeaderBarWindow(Gtk.Window):
         wayland_label.set_markup("        Wayland session")
         wayland_label.props.halign = Gtk.Align.START
 
+        # System tray 
+        tray_switch = Gtk.Switch()
+        tray_switch.set_hexpand(False)
+        tray_enabled = subprocess.run('gnome-extensions info appindicatorsupport@rgcjonas.gmail.com | grep -q ENABLED', shell=True)
+        if tray_enabled.returncode == 1:
+            tray_switch.set_active(True)
+        else:
+            tray_switch.set_active(False)
+        tray_switch.connect("notify::active", self.on_tray_activated)
+        tray_label = Gtk.Label()
+        tray_label.set_markup("        System tray")
+        tray_label.props.halign = Gtk.Align.START
+
+        
+        # Desktop icons 
+        desk_switch = Gtk.Switch()
+        desk_switch.set_hexpand(False)
+        desk_enabled = subprocess.run('gnome-extensions info desktop-icons@csoriano | grep -q ENABLED', shell=True)
+        if desk_enabled.returncode == 1:
+            desk_switch.set_active(True)
+        else:
+            desk_switch.set_active(False)
+        desk_switch.connect("notify::active", self.on_desk_activated)
+        desk_label = Gtk.Label()
+        desk_label.set_markup("        Desktop icons")
+        desk_label.props.halign = Gtk.Align.START
+
+        # Gnome Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
         theme_button.connect("clicked", self.on_gnometweaks_activated)
         theme_label = Gtk.Label()
-        theme_label.set_markup("        Theme settings")
+        theme_label.set_markup("        Gnome tweak tool")
         theme_label.props.halign = Gtk.Align.START
 
-        # Color picker
-        self.color_button = Gtk.ColorButton()
-        if Path.is_file(css_file):
-            try:
-                with open(css_file) as f:
-                    file = f.read()
-                    current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-                    current_color = current_color.group(1)
-            except AttributeError:
-                current_color = self.highlight_color    
-        else:
-            current_color = self.highlight_color
-        color = Gdk.RGBA()
-        color.parse(current_color)
-        color.to_string()
-        self.color_button.set_rgba(color)
+        # Dynamic wallpaper
+        dynapaper_button = Gtk.Button.new_with_label("Open")
+        dynapaper_button.connect("clicked", self.on_dynapaper_activated)
+        dynapaper_label = Gtk.Label()
+        dynapaper_label.set_markup("        Dynamic wallpaper settings")
+        dynapaper_label.props.halign = Gtk.Align.START
 
-        color_label = Gtk.Label()
-        color_label.set_markup("        Application highlight color")
-        color_label.props.halign = Gtk.Align.START
-        # choosing a color in the dialogue window emits a signal
-        self.color_button.connect("color-set", self.on_color_chosen)
+        # # Color picker
+        # self.color_button = Gtk.ColorButton()
+        # if Path.is_file(css_file):
+        #     try:
+        #         with open(css_file) as f:
+        #             file = f.read()
+        #             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
+        #             current_color = current_color.group(1)
+        #     except AttributeError:
+        #         current_color = self.highlight_color    
+        # else:
+        #     current_color = self.highlight_color
+        # color = Gdk.RGBA()
+        # color.parse(current_color)
+        # color.to_string()
+        # self.color_button.set_rgba(color)
+
+        # color_label = Gtk.Label()
+        # color_label.set_markup("        Application highlight color")
+        # color_label.props.halign = Gtk.Align.START
+        ## choosing a color in the dialogue window emits a signal
+        #self.color_button.connect("color-set", self.on_color_chosen)
 
         # Theme tab layout
-        theme_grid.attach(theme_button, 1, 0, 1, 1)
-        theme_grid.attach(theme_label, 3, 0, 2, 1)
-        theme_grid.attach(manjaro_switch, 1, 1, 1, 1)
-        theme_grid.attach(manjaro_label, 3, 1, 2, 1)
-        theme_grid.attach(wayland_switch, 1, 2, 1, 1)
-        theme_grid.attach(wayland_label, 3, 2, 2, 1)
-        theme_grid.attach(self.color_button, 1, 3, 1, 1)
-        theme_grid.attach(color_label, 3, 3, 2, 1)
+        theme_grid.attach(dynapaper_button, 1, 0, 1, 1)
+        theme_grid.attach(dynapaper_label, 3, 0, 2, 1)
+        theme_grid.attach(theme_button, 1, 1, 1, 1)
+        theme_grid.attach(theme_label, 3, 1, 2, 1)
+        theme_grid.attach(manjaro_switch, 1, 2, 1, 1)
+        theme_grid.attach(manjaro_label, 3, 2, 2, 1)
+        theme_grid.attach(wayland_switch, 1, 3, 1, 1)
+        theme_grid.attach(wayland_label, 3, 3, 2, 1)
+        theme_grid.attach(desk_switch, 1, 4, 1, 1)
+        theme_grid.attach(desk_label, 3, 4, 2, 1)
+        theme_grid.attach(tray_switch, 1, 5, 1, 1)
+        theme_grid.attach(tray_label, 3, 5, 2, 1)
+        #theme_grid.attach(self.color_button, 1, 3, 1, 1)
+        #theme_grid.attach(color_label, 3, 3, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
@@ -422,6 +465,24 @@ class HeaderBarWindow(Gtk.Window):
             disable_wayland()
         print("Wayland was turned", state)
 
+    def on_desk_activated(self, switch, gparam):
+        if switch.get_active():
+            state = "on"
+            subprocess.run('gnome-extensions enable desktop-icons@csoriano', shell=True)
+        else:
+            state = "off"
+            subprocess.run('gnome-extensions disable desktop-icons@csoriano', shell=True)
+        print("Desktop icons was turned", state)
+
+    def on_tray_activated(self, switch, gparam):
+        if switch.get_active():
+            state = "on"
+            subprocess.run('gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com', shell=True)
+        else:
+            state = "off"
+            subprocess.run('gnome-extensions disable appindicatorsupport@rgcjonas.gmail.com', shell=True)
+        print("System tray was turned", state)
+
     def on_branding_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
@@ -434,6 +495,9 @@ class HeaderBarWindow(Gtk.Window):
     def on_gnometweaks_activated(self, button):
         subprocess.Popen('gnome-tweaks', shell=True)
 
+    def on_dynapaper_activated(self, button):
+        subprocess.Popen('dynamic-wallpaper-editor', shell=True)
+
     def on_click_img(self, box, event):
         """Make images clickable
             change checkbox state and call on_layout_toggled()"""
@@ -443,12 +507,10 @@ class HeaderBarWindow(Gtk.Window):
         """ apply defaut layout to user """
         commands = {
             'manjaro': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'drive-menu@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
-                'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
-                'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Menu"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
             ),
             'win': (
