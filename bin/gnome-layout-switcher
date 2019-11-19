@@ -268,7 +268,7 @@ class HeaderBarWindow(Gtk.Window):
         tray_switch = Gtk.Switch()
         tray_switch.set_hexpand(False)
         tray_enabled = subprocess.run('gnome-extensions info appindicatorsupport@rgcjonas.gmail.com | grep -q ENABLED', shell=True)
-        if tray_enabled.returncode == 1:
+        if tray_enabled.returncode == 0:
             tray_switch.set_active(True)
         else:
             tray_switch.set_active(False)
@@ -282,7 +282,7 @@ class HeaderBarWindow(Gtk.Window):
         desk_switch = Gtk.Switch()
         desk_switch.set_hexpand(False)
         desk_enabled = subprocess.run('gnome-extensions info desktop-icons@csoriano | grep -q ENABLED', shell=True)
-        if desk_enabled.returncode == 1:
+        if desk_enabled.returncode == 0:
             desk_switch.set_active(True)
         else:
             desk_switch.set_active(False)
