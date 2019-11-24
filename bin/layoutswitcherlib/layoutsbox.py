@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import sys
 import gi
 gi.require_version('Gtk', '3.0')
@@ -165,12 +164,14 @@ def rgba_to_hex(col):
 class LayoutBox(Gtk.Box):
     
 
-    def __init__(self, window: Gtk.Window, orientation=Gtk.Orientation.VERTICAL, spacing=1):
+    def __init__(self, window: Gtk.Window, orientation=Gtk.Orientation.VERTICAL, spacing=1, usehello=False):
         super().__init__(orientation=orientation, spacing=spacing, expand=True)
+        self.set_margin_top(16)
         """ initialize main box """
         self.layout = 'manjaro'
         self.window = window
-        
+        self.usehello = usehello    # if we want some diff in hello or standalone app...
+
         self.previews = {}
         self.color_button = None
         self._current_color = None
@@ -183,7 +184,6 @@ class LayoutBox(Gtk.Box):
 
         rgba = self.window.get_style_context().lookup_color('theme_selected_bg_color').color
         self.highlight_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
-        
 
         # Stack settings
         stack = Gtk.Stack()
@@ -196,7 +196,8 @@ class LayoutBox(Gtk.Box):
         self.create_page_layout(stack)
         self.create_page_theme(stack)
         self.currentColor = '' # set colors from .css
-        
+        self.show_all()
+    
     def create_page_layout(self, stack):
         """ Layout menu """
         vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
