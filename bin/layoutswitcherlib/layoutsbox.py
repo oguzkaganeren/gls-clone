@@ -6,7 +6,6 @@ import subprocess
 import shutil
 from pathlib import Path
 import re
-import requests
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
