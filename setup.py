@@ -35,10 +35,11 @@ setup(
          ]),
         ('share/gtk-3.0',[
             'data/css/gtk.css',
-         ]),      
-        ('share/polkit-1/actions/',[
-            'data/org.manjaro.org.gnomelayoutswitcher.policy',
          ]),
+        # not used in this branch
+        #('share/polkit-1/actions/',[
+        #    'data/org.manjaro.org.gnomelayoutswitcher.policy',
+        # ]),
      ]
     
     #install_requires = ['pygtk'],
