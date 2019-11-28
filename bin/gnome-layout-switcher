@@ -26,10 +26,6 @@ class HeaderBarWindow(Gtk.Window):
         hb.props.title = "Layout Switcher"
         self.set_titlebar(hb)
 
-        self.previews = {}
-        self.color_button = None
-        self._current_color = None
-
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.main_box)
 
