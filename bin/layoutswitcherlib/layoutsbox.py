@@ -348,7 +348,7 @@ class LayoutBox(Gtk.Box):
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
         #TODO use property data_dir
-        resDirectory = Path(__file__).parent / "../data"   # only if we use git, path exists
+        resDirectory = Path(__file__).parent / "../../data"   # only if we use git, path exists
         if not resDirectory.resolve().exists():
             resDirectory = '/usr/share/gls'
         try:
