@@ -11,7 +11,7 @@ python setup.py bdist
 setup(
     name='layoutswitcherlib',
     version=__version__,
-    description='Gnome Layaouts Switcher',
+    description='Gnome Layout Switcher',
     url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
     download_url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
     keywords = ["gnome", "manjaro"],
