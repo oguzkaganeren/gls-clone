@@ -28,7 +28,7 @@ setup(
         ('share/icons/hicolor/scalable/apps',[
             'data/gnome-layout-switcher.svg',
          ]),
-        ('share/gls',[
+        ('share/gls/pictures',[
             'data/pictures/gnomepreview.svg',
             'data/pictures/macpreview.svg',
             'data/pictures/manjaropreview.svg',
