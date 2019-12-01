@@ -6,9 +6,13 @@ import subprocess
 import shutil
 from pathlib import Path
 import re
+import os
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
+
+# Define asset in use
+asset = os.popen("pacman -Qs manjaro-gnome-assets | awk -F '[/ ]' 'NR==1 {print $2}'").read()
 
 class Opacity:
     TOP = 1
@@ -52,15 +56,12 @@ def shell(commands):
 
 def rm_brand():
     # commands = tuple
-    commands = 'pamac-installer --remove manjaro-gdm-branding manjaro-gnome-assets',
-    'grep -q \'@define-color theme_selected_bg_color\' ~/.config/gtk-3.0/gtk.css && mv ~/.config/gtk-3.0/gtk.css' \
-    ' ~/.config/gtk-3.0/gtk.css.bak'
-    shell(commands)
+    subprocess.run(f"pamac-installer --remove manjaro-gdm-branding {asset}", shell=True)
+
 
 
 def rebrand():
-    commands = 'pamac-installer manjaro-gdm-branding', 'grep -q \'@define-color theme_selected' \
-                '_bg_color\' ~/.config/gtk-3.0/gtk.css || cp /usr/share/gtk-3.0/gtk.css ~/.config/gtk-3.0/gtk.css'
+    commands = 'pamac-installer manjaro-gdm-branding',
     shell(commands)
 
 
@@ -233,7 +234,8 @@ class LayoutBox(Gtk.Box):
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
         manjaro_switch.set_hexpand(False)
-        branding_enabled = subprocess.run('pacman -Qq manjaro-gnome-assets &>/dev/null', shell=True)
+        #branding_enabled = subprocess.run("pacman -Qq {asset} &>/dev/null", shell=True)
+        branding_enabled = subprocess.run(f"pacman -Qq {asset} &>/dev/null", shell=True)
         if branding_enabled.returncode == 0:
             manjaro_switch.set_active(True)
         else:
