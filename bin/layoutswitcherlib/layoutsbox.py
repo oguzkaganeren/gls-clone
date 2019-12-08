@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 import re
 import os
-from .config import UserConf
+from config import UserConf
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
@@ -23,8 +23,8 @@ class Opacity:
 
 def get_layouts():
     return ({'id': 'manjaro', 'label': 'Manjaro', 'x': 1, 'y': 0},
-            {'id': 'win', 'label': 'Windows', 'x': 2, 'y': 0},
-            {'id': 'mac', 'label': ' MacOs', 'x': 1, 'y': 3},
+            {'id': 'win', 'label': 'Classic', 'x': 2, 'y': 0},
+            {'id': 'mac', 'label': ' Modern', 'x': 1, 'y': 3},
             {'id': 'gnome', 'label': 'Gnome', 'x': 2, 'y': 3},)
 
 
@@ -202,6 +202,7 @@ class LayoutBox(Gtk.Box):
         self.create_page_theme(stack)
         self.currentColor = '' # set colors from .css
         self.show_all()
+        self.previews[self.layout].get_parent().btn.set_active(True)
     
     def create_page_layout(self, stack):
         """ Layout menu """
