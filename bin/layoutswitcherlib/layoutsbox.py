@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 import re
 import os
+from .config import UserConf
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
@@ -171,6 +172,10 @@ class LayoutBox(Gtk.Box):
         self.layout = 'manjaro'
         self.window = window
         self.usehello = usehello    # if we want some diff in hello or standalone app...
+
+        with UserConf() as user:
+            self.layout = user.read('layout', 'manjaro')
+            print("current layout:", self.layout)
 
         self.previews = {}
         self.color_button = None
@@ -544,4 +549,6 @@ class LayoutBox(Gtk.Box):
 
         for cmd in commands.get(self.layout, ""):
             shell(cmd)
+        with UserConf() as user:
+            self.layout = user.write({'layout':self.layout})
         print("Layout applied")
