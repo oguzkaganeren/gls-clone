@@ -7,10 +7,15 @@ import shutil
 from pathlib import Path
 import re
 import os
-from config import UserConf
+import tempfile
+import atexit
+from .config import UserConf
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
+
+# Define a temp folder to store preview
+temp_dir = tempfile.mkdtemp() 
 
 # Define asset in use
 asset = os.popen("pacman -Qs manjaro-gnome-assets | awk -F '[/ ]' 'NR==1 {print $2}'").read()
@@ -20,11 +25,13 @@ class Opacity:
     MIDDLE = 0.9
     LOW = 0.7
 
+def rm_tmp_dir():
+    shutil.rmtree(f"{temp_dir}")
 
 def get_layouts():
     return ({'id': 'manjaro', 'label': 'Manjaro', 'x': 1, 'y': 0},
-            {'id': 'win', 'label': 'Classic', 'x': 2, 'y': 0},
-            {'id': 'mac', 'label': ' Modern', 'x': 1, 'y': 3},
+            {'id': 'classic', 'label': 'Classic', 'x': 2, 'y': 0},
+            {'id': 'modern', 'label': ' Modern', 'x': 1, 'y': 3},
             {'id': 'gnome', 'label': 'Gnome', 'x': 2, 'y': 3},)
 
 
@@ -86,13 +93,13 @@ def get_extensions(chosen_layout):
                 'appindicatorsupport@rgcjonas.gmail.com',
                 'arc-menu@linxgem33.com'
             ),
-            'win': (
+            'classic': (
                 'dash-to-panel@jderose9.github.com',
                 'user-theme@gnome-shell-extensions.gcampax.github.com',
                 'appindicatorsupport@rgcjonas.gmail.com',
                 'arc-menu@linxgem33.com'
             ),
-            'mac' : (
+            'modern' : (
                 'dash-to-dock@micxgx.gmail.com',
                 'user-theme@gnome-shell-extensions.gcampax.github.com',
                 'unite@hardpixel.eu'
@@ -104,8 +111,8 @@ def get_extensions(chosen_layout):
     # List needed extension packages
     ext_pkgs = {
             'manjaro': ['gnome-shell-extension-dash-to-dock', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
-            'win': ['gnome-shell-extension-dash-to-panel', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
-            'mac' : ['gnome-shell-extension-dash-to-dock', 'gnome-shell-extensions', 'gnome-shell-extension-unite'],
+            'classic': ['gnome-shell-extension-dash-to-panel', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
+            'modern' : ['gnome-shell-extension-dash-to-dock', 'gnome-shell-extensions', 'gnome-shell-extension-unite'],
             'gnome' : ['gnome-shell-extensions']
     }
 
@@ -362,12 +369,12 @@ class LayoutBox(Gtk.Box):
         try:
             for key, img in self.previews.items():
                 # Normal preview
-                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview.svg")
-                replace_in_file(f"/tmp/{key}preview.svg", '#16a085', self.default_color)
-                img.set_from_file(f"/tmp/{key}preview.svg")
+                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"{temp_dir}/{key}preview.svg")
+                replace_in_file(f"{temp_dir}/{key}preview.svg", '#16a085', self.default_color)
+                img.set_from_file(f"{temp_dir}/{key}preview.svg")
                 # Selected preview
-                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"/tmp/{key}preview_selected.svg")
-                replace_in_file(f"/tmp/{key}preview_selected.svg", '#16a085', newcolor)
+                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"{temp_dir}/{key}preview_selected.svg")
+                replace_in_file(f"{temp_dir}/{key}preview_selected.svg", '#16a085', newcolor)
         except FileNotFoundError:
             return False
 
@@ -440,9 +447,9 @@ class LayoutBox(Gtk.Box):
             state = Opacity.TOP
             self.layout = name
             print('active layout:', self.layout)
-            button.image.set_from_file(f"/tmp/{self.layout}preview_selected.svg")
+            button.image.set_from_file(f"{temp_dir}/{self.layout}preview_selected.svg")
         else:
-            button.image.set_from_file(f"/tmp/{self.layout}preview.svg")
+            button.image.set_from_file(f"{temp_dir}/{self.layout}preview.svg")
         button.image.set_opacity(state)    # change img opacity from state
         
 
@@ -525,7 +532,7 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
             ),
-            'win': (
+            'classic': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
@@ -533,7 +540,7 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
-            'mac' : (
+            'modern' : (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
@@ -553,3 +560,4 @@ class LayoutBox(Gtk.Box):
         with UserConf() as user:
             self.layout = user.write({'layout':self.layout})
         print("Layout applied")
+        atexit.register(rm_tmp_dir)
