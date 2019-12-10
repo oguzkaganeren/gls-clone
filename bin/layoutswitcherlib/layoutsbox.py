@@ -530,8 +530,9 @@ class LayoutBox(Gtk.Box):
             'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
             ),
             'classic': (
