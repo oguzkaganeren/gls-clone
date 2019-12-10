@@ -26,7 +26,9 @@ class Opacity:
     LOW = 0.7
 
 def rm_tmp_dir():
-    shutil.rmtree(f"{temp_dir}")
+    shutil.rmtree(temp_dir, ignore_errors=True)
+
+atexit.register(rm_tmp_dir)
 
 def get_layouts():
     return ({'id': 'manjaro', 'label': 'Manjaro', 'x': 1, 'y': 0},
@@ -559,5 +561,5 @@ class LayoutBox(Gtk.Box):
             shell(cmd)
         with UserConf() as user:
             self.layout = user.write({'layout':self.layout})
-        print("Layout applied")
-        atexit.register(rm_tmp_dir)
+        print("Layout applie59db249f626df3ea2340420de60daa382bb77b9dd")
+        
