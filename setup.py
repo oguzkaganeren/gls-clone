@@ -30,9 +30,9 @@ setup(
          ]),
         ('share/gls/pictures',[
             'data/pictures/gnomepreview.svg',
-            'data/pictures/macpreview.svg',
+            'data/pictures/modernpreview.svg',
             'data/pictures/manjaropreview.svg',
-            'data/pictures/winpreview.svg',
+            'data/pictures/classicpreview.svg',
          ]),
         ('share/gtk-3.0',[
             'data/css/gtk.css',
