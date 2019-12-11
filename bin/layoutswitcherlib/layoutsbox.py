@@ -48,21 +48,25 @@ def replace_in_file(file_name: str, regex: str, value: str):
             file_write.write(re.sub(pattern, value, line))
     Path(file_old).unlink()
 
-
-def shell(commands):
+def shell(commands) ->tuple:
+    """return true if command return 0 AND error message"""
     if "--dev" in sys.argv:
         print("Debug mode on:")
         print("Simulating shell commands:")
         print(f"{commands}")
     else:
-        # only run if not in dev mode
-        if isinstance(commands, str):
-            # if is string then we only have one shell command
-            subprocess.run(commands, shell=True)
-        else:
-            # is a tuple or list
-            for cmd in commands:
-                subprocess.run(cmd, shell=True)
+        try:
+            # only run if not in dev mode
+            if isinstance(commands, str):
+                # if is string then we only have one shell command
+                subprocess.run(commands, text=True, shell=True, check=True)
+            else:
+                # is a tuple or list
+                for cmd in commands:
+                    subprocess.run(cmd, text=True, shell=True, check=True)
+        except subprocess.CalledProcessError as err:
+            return False, str(err)
+    return True, ""
 
 def rm_brand():
     # commands = tuple
@@ -524,6 +528,19 @@ class LayoutBox(Gtk.Box):
             change checkbox state and call on_layout_toggled()"""
         box.btn.set_active(True)
 
+    def dialog_error(self, title: str, message:str):
+        """display error modal dialog"""
+        dialog = Gtk.MessageDialog(
+            parent=self.window,
+            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.CLOSE,
+            message_format=title
+            )
+        dialog.format_secondary_text(message)
+        dialog.run()
+        dialog.destroy()
+
     def on_layoutapply_clicked(self, button):
         """ apply defaut layout to user """
         commands = {
@@ -557,10 +574,17 @@ class LayoutBox(Gtk.Box):
         }
 
         get_extensions(self.layout)
-
+        ret = True
         for cmd in commands.get(self.layout, ""):
-            shell(cmd)
-        with UserConf() as user:
-            self.layout = user.write({'layout':self.layout})
-        print("Layout applie59db249f626df3ea2340420de60daa382bb77b9dd")
-        
+            good, err = shell(cmd)
+            if not good:
+                # here we continue commands ... good idea ??
+                ret = False
+                error = err
+        if not ret:
+            self.dialog_error(f"Error for set layout \"{self.layout}\"", error)
+        else:
+            # save only if not one error
+            with UserConf() as user:
+                self.layout = user.write({'layout':self.layout})
+            print("Layout applie59db249f626df3ea2340420de60daa382bb77b9dd")
