@@ -562,5 +562,5 @@ class LayoutBox(Gtk.Box):
             shell(cmd)
         with UserConf() as user:
             self.layout = user.write({'layout':self.layout})
-        print("Layout applie59db249f626df3ea2340420de60daa382bb77b9dd")
+        print("Layout applied")
         
