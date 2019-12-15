@@ -70,12 +70,14 @@ def shell(commands) ->tuple:
 
 def rm_brand():
     # commands = tuple
-    subprocess.run(f"pamac-installer --remove manjaro-gdm-branding {asset}", shell=True)
+    #subprocess.run(f"pamac-installer --remove manjaro-gdm-branding {asset}", shell=True)
+    commands = (f"pamac-installer --remove manjaro-gdm-branding {asset}"),
+    shell(commands)
 
 
 
 def rebrand():
-    commands = 'pamac-installer manjaro-gdm-branding',
+    commands = (f"pamac-installer {asset}"),
     shell(commands)
 
 
@@ -587,4 +589,4 @@ class LayoutBox(Gtk.Box):
             # save only if not one error
             with UserConf() as user:
                 self.layout = user.write({'layout':self.layout})
-            print("Layout applie59db249f626df3ea2340420de60daa382bb77b9dd")
+            print("Layout applied")
