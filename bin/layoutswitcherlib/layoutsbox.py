@@ -18,7 +18,8 @@ css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
 temp_dir = tempfile.mkdtemp() 
 
 # Define asset in use
-asset = os.popen("pacman -Qs manjaro-gnome-assets | awk -F '[/ ]' 'NR==1 {print $2}'").read()
+#asset = os.popen("pacman -Qs manjaro-gnome-assets | awk -F '[/ ]' 'NR==1 {print $2}'").read()
+asset = 'manjaro-gnome-assets-19.0'
 
 class Opacity:
     TOP = 1
@@ -255,8 +256,7 @@ class LayoutBox(Gtk.Box):
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
         manjaro_switch.set_hexpand(False)
-        #branding_enabled = subprocess.run("pacman -Qq {asset} &>/dev/null", shell=True)
-        branding_enabled = subprocess.run(f"pacman -Qq {asset} &>/dev/null", shell=True)
+        branding_enabled = subprocess.run(f"pacman -Qq {asset} > /dev/null 2>&1", shell=True)
         if branding_enabled.returncode == 0:
             manjaro_switch.set_active(True)
         else:
@@ -590,3 +590,4 @@ class LayoutBox(Gtk.Box):
             with UserConf() as user:
                 self.layout = user.write({'layout':self.layout})
             print("Layout applied")
+
