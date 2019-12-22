@@ -18,7 +18,6 @@ css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
 temp_dir = tempfile.mkdtemp() 
 
 # Define asset in use
-#asset = os.popen("pacman -Qs manjaro-gnome-assets | awk -F '[/ ]' 'NR==1 {print $2}'").read()
 asset = 'manjaro-gnome-assets-19.0'
 
 class Opacity:
@@ -512,20 +511,19 @@ class LayoutBox(Gtk.Box):
             if good:
                 state = "on"
             else:
-                switch.handler_block(self.eventswitch)
-                switch.set_active(False)
-                switch.handler_unblock(self.eventswitch)
+                with switch.handler_block(self.eventswitch):
+                    switch.set_active(False)
+                    return
                 state = "off"
         else:
             good, _ = rm_brand()
             if good:
                 state = "off"
             else:
-                switch.handler_block(self.eventswitch)
-                switch.set_active(True)
-                switch.handler_unblock(self.eventswitch)
+                with switch.handler_block(self.eventswitch):
+                    switch.set_active(True)
+                    return
                 state = "on"
-
         print("Branding was turned", state)
 
     def on_gnometweaks_activated(self, button):
@@ -572,6 +570,7 @@ class LayoutBox(Gtk.Box):
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
+                'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size=32',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
             'modern' : (
