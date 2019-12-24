@@ -282,6 +282,7 @@ class LayoutBox(Gtk.Box):
             self.brand_state = True
             manjaro_switch.set_active(True)
         else:
+            self.brand_state = False
             manjaro_switch.set_active(False)
         self.branding_switch = manjaro_switch.connect("notify::active", self.on_branding_activated)
         manjaro_label = Gtk.Label()
@@ -540,6 +541,8 @@ class LayoutBox(Gtk.Box):
             result, _ = do_branding(is_active)
             if result is True:
                 print(f"do_branding: result: {result}")
+                # change brand_state
+                self.brand_state = is_active
                 pass
             else:
                 print(f"switching back to: {curr_state}")
