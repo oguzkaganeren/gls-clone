@@ -201,8 +201,8 @@ def get_asset_state() -> bool:
     arguments = asset
     if not isinstance(asset, str):
         arguments = " ".join(asset)
-    state = subprocess.run(f"pacman -Qq {arguments} > /dev/null 2>&1", shell=True)
-    if state.returncode == 0:
+    asset_state = subprocess.run(f"pacman -Qq {arguments} > /dev/null 2>&1", shell=True)
+    if asset_state.returncode == 0:
         return True
     return False
 
