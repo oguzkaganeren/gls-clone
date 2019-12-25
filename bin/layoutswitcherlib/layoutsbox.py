@@ -76,10 +76,13 @@ def shell(commands) -> tuple:
 
 
 def do_branding(remove: bool = False):
+    arguments = asset
+    if not isinstance(asset, str):
+        arguments = " ".join(asset)
     if remove:
-        commands = f"pkexec pamac remove --no-confirm manjaro-gdm-branding {asset}"
+        commands = f"pkexec pamac remove --no-confirm {arguments}"
     else:
-        commands = f"pkexec pamac install --no-confirm manjaro-gdm-branding {asset}"
+        commands = f"pkexec pamac install --no-confirm {arguments}"
     return shell(commands)
 
 
@@ -194,6 +197,13 @@ def set_highlight_color(new_color):
 #     col = "#%02x%02x%02x" % tuple(col)
 #     return col
 
+def get_asset_state() -> bool:
+    arguments = " ".join(asset)
+    state = subprocess.run(f"pacman -Qq {arguments} > /dev/null 2>&1", shell=True)
+    if state.returncode == 0:
+        return True
+    return False
+
 
 class LayoutBox(Gtk.Box):
 
@@ -206,8 +216,8 @@ class LayoutBox(Gtk.Box):
         self.usehello = usehello  # if we want some diff in hello or standalone app...
 
         self.btn_layout_first = None
-        self.branding_switch = None
-        self.brand_state = False
+        self.branding_handler_id = None
+        self.branding_active = None
 
         with UserConf() as conf:
             self.layout = conf.read("layout", "manjaro")
@@ -277,14 +287,13 @@ class LayoutBox(Gtk.Box):
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
         manjaro_switch.set_hexpand(False)
-        branding_enabled = subprocess.run(f"pacman -Qq {asset} > /dev/null 2>&1", shell=True)
-        if branding_enabled.returncode == 0:
-            self.brand_state = True
-            manjaro_switch.set_active(True)
-        else:
-            self.brand_state = False
-            manjaro_switch.set_active(False)
-        self.branding_switch = manjaro_switch.connect("notify::active", self.on_branding_activated)
+
+        # initialize branding
+        self.branding_active = get_asset_state()
+        manjaro_switch.set_active(self.branding_active)
+        self.branding_handler_id = manjaro_switch.connect("notify::active", self.on_branding_activated)
+        # --- branding initialize end
+
         manjaro_label = Gtk.Label()
         manjaro_label.set_markup("        Manjaro branding")
         manjaro_label.props.halign = Gtk.Align.START
@@ -530,25 +539,38 @@ class LayoutBox(Gtk.Box):
             subprocess.run("gnome-extensions disable appindicatorsupport@rgcjonas.gmail.com", shell=True)
         print("System tray was turned", state)
 
-    def on_branding_activated(self, switch, gparam):
+    def change_branding(self, switch):
+        # https://python-gtk-3-tutorial.readthedocs.io/en/latest/basics.html#main-loop-and-signals
 
-        is_active = switch.get_active()
-        curr_state = self.brand_state
-        print("begin on_branding_activated           ----------")
-        print(f"is active: {is_active}")
-        print(f"curr state: {curr_state}")
-        with switch.handler_block(self.branding_switch):
-            result, _ = do_branding(is_active)
-            if result is True:
-                print(f"do_branding: result: {result}")
-                # change brand_state
-                self.brand_state = is_active
-                pass
-            else:
-                print(f"switching back to: {curr_state}")
-                switch.set_state(curr_state)
-        print("end on_branding_activated             ----------")
-        print("--------xXx-------------------------------------")
+        # disconnect the signal
+        switch.disconnect(self.branding_handler_id)
+        # print entry state aka the new state
+        print(f"(ENTRY) switch.get_active() is {switch.get_active()}")
+        print(f"(ENTRY) switch.get_state() is {switch.get_state()}")
+
+        # switch branding
+        active = switch.get_active()
+        if active:
+            result, _ = do_branding(active)
+            if result:
+                self.branding_active = True
+        else:
+            result, _ = do_branding(not active)
+            if result:
+                self.branding_active = False
+        if not result:
+            self.branding_active = get_asset_state()
+            switch.set_active(self.branding_active)
+
+        # reconnect signal
+        self.branding_handler_id = switch.connect("notify::active", self.on_branding_activated)
+
+        # print the exit state
+        print(f"(EXIT) switch.get_active() is {switch.get_active()}")
+        print(f"(EXIT) switch.get_state() is {switch.get_state()}")
+
+    def on_branding_activated(self, switch, gparam):
+        self.change_branding(switch)
 
     def on_gnometweaks_activated(self, button):
         subprocess.Popen("gnome-tweaks", shell=True)
