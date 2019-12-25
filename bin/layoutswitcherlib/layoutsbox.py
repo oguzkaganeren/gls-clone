@@ -198,7 +198,9 @@ def set_highlight_color(new_color):
 #     return col
 
 def get_asset_state() -> bool:
-    arguments = " ".join(asset)
+    arguments = asset
+    if not isinstance(asset, str):
+        arguments = " ".join(asset)
     state = subprocess.run(f"pacman -Qq {arguments} > /dev/null 2>&1", shell=True)
     if state.returncode == 0:
         return True
