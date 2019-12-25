@@ -566,7 +566,7 @@ class LayoutBox(Gtk.Box):
             if result:
                 self.branding_active = True
         else:
-            result, _ = do_branding(not active)
+            result, _ = do_branding(active)
             if result:
                 self.branding_active = False
         if not result:
