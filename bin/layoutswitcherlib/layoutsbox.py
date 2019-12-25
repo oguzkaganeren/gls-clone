@@ -217,6 +217,7 @@ class LayoutBox(Gtk.Box):
         self.window = window
         self.usehello = usehello  # if we want some diff in hello or standalone app...
 
+        # PEP: no variable declaration outside __init__
         self.btn_layout_first = None
         self.branding_handler_id = None
         self.branding_active = None
