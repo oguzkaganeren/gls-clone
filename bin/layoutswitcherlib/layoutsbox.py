@@ -186,6 +186,7 @@ def set_highlight_color(new_color):
 #     col = "#%02x%02x%02x" % tuple(col)
 #     return col
 
+# ----------------- branding functions --------------------------
 def do_branding(remove: bool = False) -> tuple:
     arguments = asset
     if not isinstance(asset, str):
@@ -205,6 +206,7 @@ def get_asset_state() -> bool:
     if asset_state.returncode == 0:
         return True
     return False
+# ----------------- end branding functions ----------------------
 
 
 class LayoutBox(Gtk.Box):
