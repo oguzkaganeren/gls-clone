@@ -75,17 +75,6 @@ def shell(commands) -> tuple:
     return True, ""
 
 
-def do_branding(remove: bool = False):
-    arguments = asset
-    if not isinstance(asset, str):
-        arguments = " ".join(asset)
-    if remove:
-        commands = f"pkexec pamac remove --no-confirm {arguments}"
-    else:
-        commands = f"pkexec pamac install --no-confirm {arguments}"
-    return shell(commands)
-
-
 def enable_wayland():
     # commands = string
     commands = "pkexec sed -i 's/^WaylandEnable=false/#WaylandEnable=false/' /etc/gdm/custom.conf"
@@ -196,6 +185,17 @@ def set_highlight_color(new_color):
 #     col = (int(x) for x in col)
 #     col = "#%02x%02x%02x" % tuple(col)
 #     return col
+
+def do_branding(remove: bool = False) -> tuple:
+    arguments = asset
+    if not isinstance(asset, str):
+        arguments = " ".join(asset)
+    if remove:
+        commands = f"pkexec pamac remove --no-confirm {arguments}"
+    else:
+        commands = f"pkexec pamac install --no-confirm {arguments}"
+    return shell(commands)
+
 
 def get_asset_state() -> bool:
     arguments = asset
