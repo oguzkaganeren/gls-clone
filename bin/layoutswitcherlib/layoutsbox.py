@@ -19,7 +19,7 @@ css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
 temp_dir = tempfile.mkdtemp()
 
 # Define asset in use
-asset = "manjaro-gnome-assets-19.0"
+asset = ["manjaro-gnome-assets-19.0" "manjaro-gdm-branding"]
 
 
 class Opacity:
@@ -284,6 +284,7 @@ class LayoutBox(Gtk.Box):
         theme_grid.set_vexpand(True)
         stack.add_titled(theme_grid, "theme_grid", "Settings")
 
+        # ----------------------------------------------
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
         manjaro_switch.set_hexpand(False)
@@ -293,6 +294,7 @@ class LayoutBox(Gtk.Box):
         manjaro_switch.set_active(self.branding_active)
         self.branding_handler_id = manjaro_switch.connect("notify::active", self.on_branding_activated)
         # --- branding initialize end
+        # ----------------------------------------------
 
         manjaro_label = Gtk.Label()
         manjaro_label.set_markup("        Manjaro branding")
