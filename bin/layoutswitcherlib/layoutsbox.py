@@ -560,13 +560,12 @@ class LayoutBox(Gtk.Box):
         print(f"(ENTRY) switch.get_state() is {switch.get_state()} - new state")
 
         # switch branding
-        active = switch.get_active()
-        if active:
-            result, _ = do_branding(not active)
+        if switch.get_active():
+            result, _ = do_branding(False)
             if result:
                 self.branding_active = True
         else:
-            result, _ = do_branding(active)
+            result, _ = do_branding(True)
             if result:
                 self.branding_active = False
         if not result:
