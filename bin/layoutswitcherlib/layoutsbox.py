@@ -544,14 +544,18 @@ class LayoutBox(Gtk.Box):
             subprocess.run("gnome-extensions disable appindicatorsupport@rgcjonas.gmail.com", shell=True)
         print("System tray was turned", state)
 
+    # ------------- branding -------------------------------------------
+    def on_branding_activated(self, switch, gparam):
+        self.change_branding(switch)
+
     def change_branding(self, switch):
         # https://python-gtk-3-tutorial.readthedocs.io/en/latest/basics.html#main-loop-and-signals
-
         # disconnect the signal
         switch.disconnect(self.branding_handler_id)
+
         # print entry state aka the new state
-        print(f"(ENTRY) switch.get_active() is {switch.get_active()}")
-        print(f"(ENTRY) switch.get_state() is {switch.get_state()}")
+        print(f"(ENTRY) switch.get_active() is {switch.get_active()} - new state")
+        print(f"(ENTRY) switch.get_state() is {switch.get_state()} - new state")
 
         # switch branding
         active = switch.get_active()
@@ -571,11 +575,9 @@ class LayoutBox(Gtk.Box):
         self.branding_handler_id = switch.connect("notify::active", self.on_branding_activated)
 
         # print the exit state
-        print(f"(EXIT) switch.get_active() is {switch.get_active()}")
-        print(f"(EXIT) switch.get_state() is {switch.get_state()}")
-
-    def on_branding_activated(self, switch, gparam):
-        self.change_branding(switch)
+        print(f"(EXIT) switch.get_active() is {switch.get_active()} - final state")
+        print(f"(EXIT) switch.get_state() is {switch.get_state()} - final state")
+    # ------------- end branding ---------------------------------------
 
     def on_gnometweaks_activated(self, button):
         subprocess.Popen("gnome-tweaks", shell=True)
