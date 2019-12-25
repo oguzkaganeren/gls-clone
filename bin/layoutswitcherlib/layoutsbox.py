@@ -291,7 +291,7 @@ class LayoutBox(Gtk.Box):
         manjaro_switch = Gtk.Switch()
         manjaro_switch.set_hexpand(False)
 
-        # initialize branding
+        # get branding state True/False
         self.branding_active = get_asset_state()
         manjaro_switch.set_active(self.branding_active)
         self.branding_handler_id = manjaro_switch.connect("notify::active", self.on_branding_activated)
