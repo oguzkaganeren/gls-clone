@@ -1,7 +1,8 @@
 import sys
 import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GObject
 import subprocess
 import shutil
 from pathlib import Path
@@ -12,29 +13,33 @@ import atexit
 from .config import UserConf
 
 # Define the path to css file
-css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
+css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
 
 # Define a temp folder to store preview
-temp_dir = tempfile.mkdtemp() 
+temp_dir = tempfile.mkdtemp()
 
 # Define asset in use
-asset = 'manjaro-gnome-assets-19.0'
+asset = ["manjaro-gnome-assets-19.0", "manjaro-gdm-branding"]
+
 
 class Opacity:
     TOP = 1
     MIDDLE = 0.9
     LOW = 0.7
 
+
 def rm_tmp_dir():
     shutil.rmtree(temp_dir, ignore_errors=True)
 
+
 atexit.register(rm_tmp_dir)
 
+
 def get_layouts():
-    return ({'id': 'manjaro', 'label': 'Manjaro', 'x': 1, 'y': 0},
-            {'id': 'classic', 'label': 'Classic', 'x': 2, 'y': 0},
-            {'id': 'modern', 'label': ' Modern', 'x': 1, 'y': 3},
-            {'id': 'gnome', 'label': 'Gnome', 'x': 2, 'y': 3},)
+    return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
+            {"id": "classic", "label": "Classic", "x": 2, "y": 0},
+            {"id": "modern", "label": " Modern", "x": 1, "y": 3},
+            {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
 
 
 def replace_in_file(file_name: str, regex: str, value: str):
@@ -42,13 +47,14 @@ def replace_in_file(file_name: str, regex: str, value: str):
     pattern = re.compile(regex)
     file_old = f"{file_name}~"
     shutil.copy(file_name, file_old)
-    with open(file_old, 'tr') as file_read, open(file_name, 'tw') as file_write:
+    with open(file_old, "tr") as file_read, open(file_name, "tw") as file_write:
         # reading lines takes less ram that reading the entire file, but is also slower.
         for line in file_read:
             file_write.write(re.sub(pattern, value, line))
     Path(file_old).unlink()
 
-def shell(commands) ->tuple:
+
+def shell(commands) -> tuple:
     """return true if command return 0 AND error message"""
     if "--dev" in sys.argv:
         print("Debug mode on:")
@@ -68,77 +74,80 @@ def shell(commands) ->tuple:
             return False, str(err)
     return True, ""
 
-def rm_brand():
-    # commands = tuple
-    commands = (f"pkexec pamac remove --no-confirm manjaro-gdm-branding {asset}"),
-    return shell(commands)
-
-
-
-def rebrand():
-    commands = (f"pkexec pamac install --no-confirm {asset}"),
-    return shell(commands)
-
 
 def enable_wayland():
     # commands = string
-    commands = 'pkexec sed -i "s/^WaylandEnable=false/#WaylandEnable=false/" /etc/gdm/custom.conf'
+    commands = "pkexec sed -i 's/^WaylandEnable=false/#WaylandEnable=false/' /etc/gdm/custom.conf"
     shell(commands)
 
 
 def disable_wayland():
-    commands = 'pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
+    commands = "pkexec sed -i 's/^#WaylandEnable=false/WaylandEnable=false/' /etc/gdm/custom.conf"
     shell(commands)
+
 
 def get_extensions(chosen_layout):
     # List needed extensions
     extensions = {
-            'manjaro': (
-                'dash-to-dock@micxgx.gmail.com',
-                'user-theme@gnome-shell-extensions.gcampax.github.com',
-                'drive-menu@gnome-shell-extensions.gcampax.github.com',
-                'appindicatorsupport@rgcjonas.gmail.com',
-                'arc-menu@linxgem33.com'
-            ),
-            'classic': (
-                'dash-to-panel@jderose9.github.com',
-                'user-theme@gnome-shell-extensions.gcampax.github.com',
-                'appindicatorsupport@rgcjonas.gmail.com',
-                'arc-menu@linxgem33.com'
-            ),
-            'modern' : (
-                'dash-to-dock@micxgx.gmail.com',
-                'user-theme@gnome-shell-extensions.gcampax.github.com',
-                'unite@hardpixel.eu'
-            ),
-            'gnome' : (
-                'user-theme@gnome-shell-extensions.gcampax.github.com',
-            )
+        "manjaro": (
+            "dash-to-dock@micxgx.gmail.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "drive-menu@gnome-shell-extensions.gcampax.github.com",
+            "appindicatorsupport@rgcjonas.gmail.com",
+            "arc-menu@linxgem33.com"
+        ),
+        "classic": (
+            "dash-to-panel@jderose9.github.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "appindicatorsupport@rgcjonas.gmail.com",
+            "arc-menu@linxgem33.com"
+        ),
+        "modern": (
+            "dash-to-dock@micxgx.gmail.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "unite@hardpixel.eu"
+        ),
+        "gnome": (
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+        )
     }
     # List needed extension packages
     ext_pkgs = {
-            'manjaro': ['gnome-shell-extension-dash-to-dock', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
-            'classic': ['gnome-shell-extension-dash-to-panel', 'gnome-shell-extensions', 'gnome-shell-extension-appindicator', 'gnome-shell-extension-arc-menu'],
-            'modern' : ['gnome-shell-extension-dash-to-dock', 'gnome-shell-extensions', 'gnome-shell-extension-unite'],
-            'gnome' : ['gnome-shell-extensions']
+        "manjaro": ["gnome-shell-extension-dash-to-dock",
+                    "gnome-shell-extensions",
+                    "gnome-shell-extension-appindicator",
+                    "gnome-shell-extension-arc-menu"],
+        "classic": ["gnome-shell-extension-dash-to-panel",
+                    "gnome-shell-extensions",
+                    "gnome-shell-extension-appindicator",
+                    "gnome-shell-extension-arc-menu"],
+        "modern": ["gnome-shell-extension-dash-to-dock",
+                   "gnome-shell-extensions",
+                   "gnome-shell-extension-unite"],
+        "gnome": ["gnome-shell-extensions"]
     }
 
-    pkgs_missing = False
     # Check if extensions are missing
-    for ext in extensions.get(chosen_layout):
-        user_path = Path(f"~/.local/share/gnome-shell/extensions/{ext}").expanduser()
-        sys_path = Path(f"/usr/share/gnome-shell/extensions/{ext}")
-        if not Path.is_dir(sys_path) and not Path.is_dir(Path(user_path).expanduser()):
-            pkgs_missing = True
-        else:
-            print('Already installed', ext)
+    pkgs_missing = False
+    try:
+        for ext in extensions.get(chosen_layout):
+            user_path = Path(f"~/.local/share/gnome-shell/extensions/{ext}").expanduser()
+            sys_path = Path(f"/usr/share/gnome-shell/extensions/{ext}")
+            if not Path.is_dir(sys_path) and not Path.is_dir(Path(user_path).expanduser()):
+                pkgs_missing = True
+            else:
+                print("Already installed", ext)
+    except (TypeError, AttributeError) as e:
+        print(e)
+        pass
+
     # Install missing packages with pamac
     if pkgs_missing:
         pkg_list = []
         for pkg in ext_pkgs.get(chosen_layout):
-            pkg_installed = subprocess.run(f'pacman -Qq {pkg}&>/dev/null', shell=True)
+            pkg_installed = subprocess.run(f"pacman -Qq {pkg}&>/dev/null", shell=True)
             if pkg_installed.returncode == 1:
-                pkg_list.append(pkg)                
+                pkg_list.append(pkg)
         print(f"Needed packages: {' '.join(pkg_list)}")
         shell(f"pamac-installer {' '.join(pkg_list)}")
 
@@ -146,10 +155,10 @@ def get_extensions(chosen_layout):
 def set_highlight_color(new_color):
     """ set highlight color in user file gtk.css """
     # If not present, copy the file from default
-    #TODO re-write : line by line or user Path().read/write
+    # TODO re-write : line by line or user Path().read/write
     try:
         if not Path.is_file(css_file):
-            shutil.copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
+            shutil.copyfile("/usr/share/gtk-3.0/gtk.css", css_file)
         # Find the current highlight color
         with open(css_file) as f:
             file = f.read()
@@ -159,50 +168,78 @@ def set_highlight_color(new_color):
                 current_color = current_color.group(1)
                 # Replace the old color with new one
                 with open(css_file) as f:
-                    newText = f.read().replace(current_color, new_color, 2)
+                    new_text = f.read().replace(current_color, new_color, 2)
                 # Write the changes
                 with open(css_file, "w") as f:
-                    f.write(newText)
+                    f.write(new_text)
             except AttributeError:
-                print('Cannot set color. Copy /usr/share/gtk-3.0/gtk.css to ~/.config/gtk-3.0/gtk.css to continue')            
+                print("Cannot set color. Copy /usr/share/gtk-3.0/gtk.css to ~/.config/gtk-3.0/gtk.css to continue")
 
     except FileNotFoundError:
-        print('Cannot set color, gtk.css not found')
+        print("Cannot set color, gtk.css not found")
 
-def rgba_to_hex(col):
-    col.to_string()[4:-1:]
-    col = self.default_color.split(',')
-    col = (int(x) for x in col)
-    col = '#%02x%02x%02x' % tuple(col)
-    return col
+
+# def rgba_to_hex(col):
+#     col.to_string()[4:-1:]
+#     col = self.default_color.split(",")
+#     col = (int(x) for x in col)
+#     col = "#%02x%02x%02x" % tuple(col)
+#     return col
+
+# ----------------- branding functions --------------------------
+def do_branding(remove: bool) -> tuple:
+    arguments = asset
+    if not isinstance(asset, str):
+        arguments = " ".join(asset)
+    if remove:
+        commands = f"pkexec pamac remove --no-confirm {arguments}"
+    else:
+        commands = f"pkexec pamac install --no-confirm {arguments}"
+    return shell(commands)
+
+
+def get_asset_state() -> bool:
+    arguments = asset
+    if not isinstance(asset, str):
+        arguments = " ".join(asset)
+    asset_state = subprocess.run(f"pacman -Qq {arguments} > /dev/null 2>&1", shell=True)
+    if asset_state.returncode == 0:
+        return True
+    return False
+# ----------------- end branding functions ----------------------
+
 
 class LayoutBox(Gtk.Box):
-    
 
     def __init__(self, window: Gtk.Window, orientation=Gtk.Orientation.VERTICAL, spacing=1, usehello=False):
         super().__init__(orientation=orientation, spacing=spacing, expand=True)
         self.set_margin_top(16)
         """ initialize main box """
-        self.layout = 'manjaro'
+        self.layout = "manjaro"
         self.window = window
-        self.usehello = usehello    # if we want some diff in hello or standalone app...
+        self.usehello = usehello  # if we want some diff in hello or standalone app...
 
-        with UserConf() as user:
-            self.layout = user.read('layout', 'manjaro')
+        # PEP: no variable declaration outside __init__
+        self.btn_layout_first = None
+        self.branding_handler_id = None
+        self.branding_active = None
+
+        with UserConf() as conf:
+            self.layout = conf.read("layout", "manjaro")
             print("current layout:", self.layout)
 
         self.previews = {}
         self.color_button = None
         self._current_color = None
+
         # self.set_default_size(300, 300)
 
         # Determine preview color and highllight color
+        rgba = self.window.get_style_context().lookup_color("theme_fg_color").color
+        self.default_color = "#{:02x}{:02x}{:02x}".format(*[int(c * 255) for c in rgba]).upper()
 
-        rgba = self.window.get_style_context().lookup_color('theme_fg_color').color
-        self.default_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
-
-        rgba = self.window.get_style_context().lookup_color('theme_selected_bg_color').color
-        self.highlight_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
+        rgba = self.window.get_style_context().lookup_color("theme_selected_bg_color").color
+        self.highlight_color = "#{:02x}{:02x}{:02x}".format(*[int(c * 255) for c in rgba]).upper()
 
         # Stack settings
         stack = Gtk.Stack()
@@ -214,19 +251,20 @@ class LayoutBox(Gtk.Box):
         stack.props.valign = Gtk.Align.START
         self.create_page_layout(stack)
         self.create_page_theme(stack)
-        self.currentColor = '' # set colors from .css
+        self.current_color = ""  # set colors from .css
         self.show_all()
         self.previews[self.layout].get_parent().btn.set_active(True)
-    
+
     def create_page_layout(self, stack):
         """ Layout menu """
-        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
+        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0,
+                        margin_bottom=1, margin_top=0)
         self.add(vbox)
         vbox.attach(stack, 1, 1, 1, 3)
-        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0, margin_top=15)
+        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0,
+                            margin_top=15)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
-        self.btn_layout_first = None
         for layout in get_layouts():
             self.create_layout_btn(layout=layout, the_grid=radiobox)
 
@@ -251,15 +289,18 @@ class LayoutBox(Gtk.Box):
         theme_grid.set_vexpand(True)
         stack.add_titled(theme_grid, "theme_grid", "Settings")
 
+        # ----------------------------------------------
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
         manjaro_switch.set_hexpand(False)
-        branding_enabled = subprocess.run(f"pacman -Qq {asset} > /dev/null 2>&1", shell=True)
-        if branding_enabled.returncode == 0:
-            manjaro_switch.set_active(True)
-        else:
-            manjaro_switch.set_active(False)
-        self.eventswitch = manjaro_switch.connect("notify::active", self.on_branding_activated)
+
+        # get branding state True/False
+        self.branding_active = get_asset_state()
+        manjaro_switch.set_active(self.branding_active)
+        self.branding_handler_id = manjaro_switch.connect("notify::active", self.on_branding_activated)
+        # --- branding initialize end
+        # ----------------------------------------------
+
         manjaro_label = Gtk.Label()
         manjaro_label.set_markup("        Manjaro branding")
         manjaro_label.props.halign = Gtk.Align.START
@@ -267,7 +308,7 @@ class LayoutBox(Gtk.Box):
         # wayland toggle
         wayland_switch = Gtk.Switch()
         wayland_switch.set_hexpand(False)
-        wayland_enabled = subprocess.run('grep -q "^WaylandEnable=false" /etc/gdm/custom.conf', shell=True)
+        wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True)
         if wayland_enabled.returncode == 1:
             wayland_switch.set_active(True)
         else:
@@ -280,7 +321,8 @@ class LayoutBox(Gtk.Box):
         # System tray 
         tray_switch = Gtk.Switch()
         tray_switch.set_hexpand(False)
-        tray_enabled = subprocess.run('gnome-extensions info appindicatorsupport@rgcjonas.gmail.com | grep -q ENABLED', shell=True)
+        tray_enabled = subprocess.run(
+            "gnome-extensions info appindicatorsupport@rgcjonas.gmail.com | grep -q ENABLED", shell=True)
         if tray_enabled.returncode == 0:
             tray_switch.set_active(True)
         else:
@@ -290,11 +332,11 @@ class LayoutBox(Gtk.Box):
         tray_label.set_markup("        System tray")
         tray_label.props.halign = Gtk.Align.START
 
-        
-        # Desktop icons 
+        # Desktop icons
         desk_switch = Gtk.Switch()
         desk_switch.set_hexpand(False)
-        desk_enabled = subprocess.run('gnome-extensions info desktop-icons@csoriano | grep -q ENABLED', shell=True)
+        desk_enabled = subprocess.run(
+            "gnome-extensions info desktop-icons@csoriano | grep -q ENABLED", shell=True)
         if desk_enabled.returncode == 0:
             desk_switch.set_active(True)
         else:
@@ -345,8 +387,8 @@ class LayoutBox(Gtk.Box):
         # color_label = Gtk.Label()
         # color_label.set_markup("        Application highlight color")
         # color_label.props.halign = Gtk.Align.START
-        ## choosing a color in the dialogue window emits a signal
-        #self.color_button.connect("color-set", self.on_color_chosen)
+        # choosing a color in the dialogue window emits a signal
+        # self.color_button.connect("color-set", self.on_color_chosen)
 
         # Theme tab layout
         theme_grid.attach(dynapaper_button, 1, 0, 1, 1)
@@ -363,37 +405,37 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(desk_label, 3, 5, 2, 1)
         theme_grid.attach(tray_switch, 1, 6, 1, 1)
         theme_grid.attach(tray_label, 3, 6, 2, 1)
-        #theme_grid.attach(self.color_button, 1, 3, 1, 1)
-        #theme_grid.attach(color_label, 3, 3, 2, 1)
+        # theme_grid.attach(self.color_button, 1, 3, 1, 1)
+        # theme_grid.attach(color_label, 3, 3, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
-        #TODO use property data_dir
-        resDirectory = Path(__file__).parent / "../../data"   # only if we use git, path exists
-        if not resDirectory.resolve().exists():
-            resDirectory = '/usr/share/gls'
+        # TODO use property data_dir
+        res_directory = Path(__file__).parent / "../../data"  # only if we use git, path exists
+        if not res_directory.resolve().exists():
+            res_directory = "/usr/share/gls"
         try:
             for key, img in self.previews.items():
                 # Normal preview
-                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"{temp_dir}/{key}preview.svg")
-                replace_in_file(f"{temp_dir}/{key}preview.svg", '#16a085', self.default_color)
+                shutil.copyfile(f"{res_directory}/pictures/{key}preview.svg", f"{temp_dir}/{key}preview.svg")
+                replace_in_file(f"{temp_dir}/{key}preview.svg", "#16a085", self.default_color)
                 img.set_from_file(f"{temp_dir}/{key}preview.svg")
                 # Selected preview
-                shutil.copyfile(f"{resDirectory}/pictures/{key}preview.svg", f"{temp_dir}/{key}preview_selected.svg")
-                replace_in_file(f"{temp_dir}/{key}preview_selected.svg", '#16a085', newcolor)
+                shutil.copyfile(f"{res_directory}/pictures/{key}preview.svg", f"{temp_dir}/{key}preview_selected.svg")
+                replace_in_file(f"{temp_dir}/{key}preview_selected.svg", "#16a085", newcolor)
         except FileNotFoundError:
             return False
 
     def create_layout_btn(self, layout, the_grid):
         """ Create desktop element in grid """
-        btn = Gtk.RadioButton.new_with_label_from_widget(self.btn_layout_first, layout['label'])
+        btn = Gtk.RadioButton.new_with_label_from_widget(self.btn_layout_first, layout["label"])
         if not self.btn_layout_first:
             self.btn_layout_first = btn
-        btn.connect("toggled", self.on_layout_toggled, layout['id'])
-        the_grid.attach(btn, layout['x'], layout['y'], 1, 1)
+        btn.connect("toggled", self.on_layout_toggled, layout["id"])
+        the_grid.attach(btn, layout["x"], layout["y"], 1, 1)
 
         preview_img = Gtk.Image()
-        self.previews[layout['id']] = preview_img
+        self.previews[layout["id"]] = preview_img
         # preview loaded by set_preview_colors()
         btn.image = preview_img  # link img to checkbox for easy find
         # reduce opacity of de-selected previews
@@ -406,16 +448,16 @@ class LayoutBox(Gtk.Box):
         event_img.connect("button-release-event", self.on_click_img)  # click in box
         event_img.connect("enter-notify-event", self.on_over_img, True)  # mouse over box
         event_img.connect("leave-notify-event", self.on_over_img, False)  # mouse out box
-        event_img.add(preview_img)    # add img in box
-        event_img.btn = btn    # link btn to box for easy find
-        the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
+        event_img.add(preview_img)  # add img in box
+        event_img.btn = btn  # link btn to box for easy find
+        the_grid.attach(event_img, layout["x"], layout["y"] + 1, 1, 1)  # add box and not img in grid
 
     @property
-    def currentColor(self):
+    def current_color(self):
         return self._current_color
 
-    @currentColor.setter
-    def currentColor(self, value):
+    @current_color.setter
+    def current_color(self, value):
         """ assign new curent color :
                 change preview images
                 change btn theme color
@@ -424,7 +466,7 @@ class LayoutBox(Gtk.Box):
             if not value then read value in file.css
         """
         if not value:
-            value = '#16a085'
+            value = "#16a085"
             try:
                 with open(css_file) as fread:
                     file = fread.read()
@@ -436,7 +478,7 @@ class LayoutBox(Gtk.Box):
                 value = self.highlight_color
         self._current_color = value
         self.set_preview_colors(self._current_color)
-        ## ??? and (re-)change btn theme color
+        # ??? and (re-)change btn theme color
         if self.color_button:
             color = Gdk.RGBA()
             color.parse(self._current_color)
@@ -452,12 +494,11 @@ class LayoutBox(Gtk.Box):
         if button.get_active():
             state = Opacity.TOP
             self.layout = name
-            print('active layout:', self.layout)
+            print("active layout:", self.layout)
             button.image.set_from_file(f"{temp_dir}/{self.layout}preview_selected.svg")
         else:
             button.image.set_from_file(f"{temp_dir}/{self.layout}preview.svg")
-        button.image.set_opacity(state)    # change img opacity from state
-        
+        button.image.set_opacity(state)  # change img opacity from state
 
     def on_over_img(self, box, event, is_over_image):
         """ on mouse over / out : change opacity """
@@ -472,11 +513,11 @@ class LayoutBox(Gtk.Box):
         """ after chose a theme color """
         col = self.color_button.get_rgba().to_string()[4:-1:]
         # convert color to hexadecimal
-        col = col.split(',')
+        col = col.split(",")
         col = (int(x) for x in col)
-        col = '#%02x%02x%02x' % tuple(col)
+        col = "#%02x%02x%02x" % tuple(col)
         set_highlight_color(col)
-        self.currentColor = col
+        self.current_color = col
 
     def on_wayland_activated(self, switch, gparam):
         if switch.get_active():
@@ -490,57 +531,70 @@ class LayoutBox(Gtk.Box):
     def on_desk_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
-            subprocess.run('gnome-extensions enable desktop-icons@csoriano', shell=True)
+            subprocess.run("gnome-extensions enable desktop-icons@csoriano", shell=True)
         else:
             state = "off"
-            subprocess.run('gnome-extensions disable desktop-icons@csoriano', shell=True)
+            subprocess.run("gnome-extensions disable desktop-icons@csoriano", shell=True)
         print("Desktop icons was turned", state)
 
     def on_tray_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
-            subprocess.run('gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com', shell=True)
+            subprocess.run("gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com", shell=True)
         else:
             state = "off"
-            subprocess.run('gnome-extensions disable appindicatorsupport@rgcjonas.gmail.com', shell=True)
+            subprocess.run("gnome-extensions disable appindicatorsupport@rgcjonas.gmail.com", shell=True)
         print("System tray was turned", state)
 
+    # ------------- branding -------------------------------------------
     def on_branding_activated(self, switch, gparam):
+        self.change_branding(switch)
+
+    def change_branding(self, switch):
+        # https://python-gtk-3-tutorial.readthedocs.io/en/latest/basics.html#main-loop-and-signals
+        # disconnect the signal
+        switch.disconnect(self.branding_handler_id)
+
+        # print entry state aka the new state
+        print(f"(ENTRY) switch.get_active() is {switch.get_active()} - new state")
+        print(f"(ENTRY) switch.get_state() is {switch.get_state()} - new state")
+
+        # switch branding
         if switch.get_active():
-            good, _ = rebrand()
-            if good:
-                state = "on"
-            else:
-                with switch.handler_block(self.eventswitch):
-                    switch.set_active(False)
-                    return
-                state = "off"
+            result, _ = do_branding(False)
+            if result:
+                self.branding_active = True
         else:
-            good, _ = rm_brand()
-            if good:
-                state = "off"
-            else:
-                with switch.handler_block(self.eventswitch):
-                    switch.set_active(True)
-                    return
-                state = "on"
-        print("Branding was turned", state)
+            result, _ = do_branding(True)
+            if result:
+                self.branding_active = False
+        if not result:
+            self.branding_active = get_asset_state()
+            switch.set_active(self.branding_active)
+
+        # reconnect signal
+        self.branding_handler_id = switch.connect("notify::active", self.on_branding_activated)
+
+        # print the exit state
+        print(f"(EXIT) switch.get_active() is {switch.get_active()} - final state")
+        print(f"(EXIT) switch.get_state() is {switch.get_state()} - final state")
+    # ------------- end branding ---------------------------------------
 
     def on_gnometweaks_activated(self, button):
-        subprocess.Popen('gnome-tweaks', shell=True)
-    
+        subprocess.Popen("gnome-tweaks", shell=True)
+
     def on_goa_activated(self, button):
-        subprocess.Popen('gnome-control-center online-accounts', shell=True)
-    
+        subprocess.Popen("gnome-control-center online-accounts", shell=True)
+
     def on_dynapaper_activated(self, button):
-        subprocess.Popen('dynamic-wallpaper-editor', shell=True)
+        subprocess.Popen("dynamic-wallpaper-editor", shell=True)
 
     def on_click_img(self, box, event):
         """Make images clickable
             change checkbox state and call on_layout_toggled()"""
         box.btn.set_active(True)
 
-    def dialog_error(self, title: str, message:str):
+    def dialog_error(self, title: str, message: str):
         """display error modal dialog"""
         dialog = Gtk.MessageDialog(
             parent=self.window,
@@ -548,7 +602,7 @@ class LayoutBox(Gtk.Box):
             type=Gtk.MessageType.ERROR,
             buttons=Gtk.ButtonsType.CLOSE,
             message_format=title
-            )
+        )
         dialog.format_secondary_text(message)
         dialog.run()
         dialog.destroy()
@@ -557,7 +611,9 @@ class LayoutBox(Gtk.Box):
         """ apply defaut layout to user """
         commands = {
             'manjaro': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
@@ -565,39 +621,49 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
             ),
             'classic': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', '
+                '\'arc-menu@linxgem33.com\']"',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size=32',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
-            'modern' : (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', \'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', \'pamac-updates@manjaro.org\']"',
+            'modern': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
+                '\'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"'
             ),
-            'gnome' : (
-                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
+            'gnome': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             )
+
         }
 
         get_extensions(self.layout)
         ret = True
+        good = True
+        err = None
         for cmd in commands.get(self.layout, ""):
             good, err = shell(cmd)
-            if not good:
-                # here we continue commands ... good idea ??
-                ret = False
-                error = err
+        if not good:
+            # here we continue commands ... good idea ??
+            ret = False
         if not ret:
-            self.dialog_error(f"Error for set layout \"{self.layout}\"", error)
+            self.dialog_error(f"Error for set layout \"{self.layout}\"", err)
         else:
             # save only if not one error
-            with UserConf() as user:
-                self.layout = user.write({'layout':self.layout})
-            print("Layout applied")
+            with UserConf() as conf:
+                self.layout = conf.write({"layout": self.layout})
+                print("Layout applied")

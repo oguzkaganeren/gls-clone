@@ -1,6 +1,7 @@
 import configparser
 from pathlib import Path
 
+
 class UserConf:
     """
     class for read/write key-values in $HOME
@@ -18,8 +19,8 @@ class UserConf:
 
         if not app_name:
             app_name = self.__app_name__
-        self.inifile = Path.home() / f".config/{app_name}.conf"
-        self.inifile.parent.mkdir(parents=True, exist_ok=True)
+        self.inifile = f"{Path.home()}/.config/{app_name}.conf"
+        # self.inifile.parent.mkdir(parents=True, exist_ok=True)
         self.config = None  # can use only after "with"
         self.modified = False
 
@@ -69,7 +70,7 @@ class UserConf:
 
         try:
             return self.config.get(section, key)
-        except (KeyError, configparser.NoOptionError,configparser.NoSectionError):
+        except (KeyError, configparser.NoOptionError, configparser.NoSectionError):
             return default or None
 
     def write(self, fields: dict, section: str = ''):
@@ -84,14 +85,14 @@ class UserConf:
         if not section:
             section = self.KEY
         section = section.upper()
+        section_object = None
         try:
             section_object = self.config[section]
         except KeyError:
             self.config[section] = {}
-        section_object = self.config[section]
 
-        for key, value in fields.items():
-            section_object[key] = str(value)
+        for key, local_val in fields.items():
+            section_object[key] = str(local_val)
         self.modified = True
 
 
@@ -101,10 +102,10 @@ if __name__ == '__main__':
     """
     conf = UserConf()
     with conf:
-    # or: with UserConf() as conf:
-        conf.write({'layout': 'manjaro'})   # in default section
+        # or: with UserConf() as conf:
+        conf.write({'layout': 'manjaro'})  # in default section
         conf.write({'first': 'True'}, 'TEST')
-        conf.write({'x': 55, 'y':199, 'z':1}, 'SIZE')
+        conf.write({'x': 55, 'y': 199, 'z': 1}, 'SIZE')
 
     with UserConf() as user:
         value = user.read('setting.layout', '?')
