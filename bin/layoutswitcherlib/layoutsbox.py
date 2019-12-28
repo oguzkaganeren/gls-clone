@@ -629,7 +629,6 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
-                'gsettings set org.gnome.shell.extensions.arc-menu menu-button-text "Custom_Text"',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
                 'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size=32',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
