@@ -94,7 +94,6 @@ def get_extensions(chosen_layout):
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "drive-menu@gnome-shell-extensions.gcampax.github.com",
             "appindicatorsupport@rgcjonas.gmail.com",
-            "arc-menu@linxgem33.com"
         ),
         "classic": (
             "dash-to-panel@jderose9.github.com",
@@ -115,8 +114,7 @@ def get_extensions(chosen_layout):
     ext_pkgs = {
         "manjaro": ["gnome-shell-extension-dash-to-dock",
                     "gnome-shell-extensions",
-                    "gnome-shell-extension-appindicator",
-                    "gnome-shell-extension-arc-menu"],
+                    "gnome-shell-extension-appindicator",],
         "classic": ["gnome-shell-extension-dash-to-panel",
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",
@@ -629,8 +627,8 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
-                'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-text " "',
-                'gsettings set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size=32',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
             'modern': (
