@@ -583,6 +583,7 @@ class LayoutBox(Gtk.Box):
                 # here we continue commands ... good idea ??
                 ret = False
                 error = err
+        saving = self.layout
         if not ret:
             self.dialog_error(f"Error for set layout \"{self.layout}\"", error)
         else:
@@ -591,3 +592,4 @@ class LayoutBox(Gtk.Box):
                 self.layout = user.write({'layout':self.layout})
             print("Layout applied")
 
+        self.layout = saving
