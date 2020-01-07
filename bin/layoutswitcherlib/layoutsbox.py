@@ -271,7 +271,7 @@ class LayoutBox(Gtk.Box):
         radiobox.attach(applybutton, 1, 6, 2, 1)
         applybutton.props.valign = Gtk.Align.END
 
-        stack.add_titled(radiobox, "radiobox", "Layout")
+        stack.add_titled(radiobox, "radiobox", "Layouts")
         stack.props.margin_bottom = 0
         stack_switcher = Gtk.StackSwitcher()
         stack_switcher.set_stack(stack)
@@ -606,7 +606,7 @@ class LayoutBox(Gtk.Box):
         dialog.destroy()
 
     def on_layoutapply_clicked(self, button):
-        """ apply defaut layout to user """
+        """ apply default layout to user """
         commands = {
             'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
@@ -657,6 +657,7 @@ class LayoutBox(Gtk.Box):
         if not good:
             # here we continue commands ... good idea ??
             ret = False
+        saving = self.layout
         if not ret:
             self.dialog_error(f"Error for set layout \"{self.layout}\"", err)
         else:
@@ -664,3 +665,4 @@ class LayoutBox(Gtk.Box):
             with UserConf() as conf:
                 self.layout = conf.write({"layout": self.layout})
                 print("Layout applied")
+        self.layout = saving
