@@ -76,15 +76,40 @@ def shell(commands) -> tuple:
 
 
 def enable_wayland():
-    # commands = string
-    commands = "pkexec sed -i 's/^WaylandEnable=false/#WaylandEnable=false/' /etc/gdm/custom.conf"
-    shell(commands)
-
+    wayland_success = subprocess.run("pkexec sed -i 's/^WaylandEnable=false/#WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
+    if wayland_success.returncode == 0:
+        return True
+    else:
+        return False
 
 def disable_wayland():
-    commands = "pkexec sed -i 's/^#WaylandEnable=false/WaylandEnable=false/' /etc/gdm/custom.conf"
-    shell(commands)
+    wayland_success = subprocess.run("pkexec sed -i 's/^#WaylandEnable=false/WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
+    if wayland_success.returncode == 0:
+        return True
+    else:
+        return False
 
+def toggle_wayland():
+    if get_wayland_state():
+        wayland_success = subprocess.run("pkexec sed -i 's/^#WaylandEnable=false/WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
+        if wayland_success.returncode == 0:
+            return True
+        else:
+            return False
+    else:
+        wayland_success = subprocess.run("pkexec sed -i 's/^WaylandEnable=false/#WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
+        if wayland_success.returncode == 0:
+            return True
+        else:
+            return False
+
+
+def get_wayland_state():
+    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True)
+    if wayland_enabled.returncode == 1:
+        return True
+    else:
+        return False
 
 def get_extensions(chosen_layout):
     # List needed extensions
@@ -221,6 +246,8 @@ class LayoutBox(Gtk.Box):
         self.btn_layout_first = None
         self.branding_handler_id = None
         self.branding_active = None
+        self.wayland_handler_id = None
+        self.wayland_active = None
 
         with UserConf() as conf:
             self.layout = conf.read("layout", "manjaro")
@@ -271,7 +298,7 @@ class LayoutBox(Gtk.Box):
         radiobox.attach(applybutton, 1, 6, 2, 1)
         applybutton.props.valign = Gtk.Align.END
 
-        stack.add_titled(radiobox, "radiobox", "Layouts")
+        stack.add_titled(radiobox, "radiobox", "Layout")
         stack.props.margin_bottom = 0
         stack_switcher = Gtk.StackSwitcher()
         stack_switcher.set_stack(stack)
@@ -306,8 +333,8 @@ class LayoutBox(Gtk.Box):
         # wayland toggle
         wayland_switch = Gtk.Switch()
         wayland_switch.set_hexpand(False)
-        wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True)
-        if wayland_enabled.returncode == 1:
+
+        if get_wayland_state():
             wayland_switch.set_active(True)
         else:
             wayland_switch.set_active(False)
@@ -316,6 +343,9 @@ class LayoutBox(Gtk.Box):
         wayland_label.set_markup("        Wayland session")
         wayland_label.props.halign = Gtk.Align.START
 
+        self.wayland_active = get_wayland_state()
+        wayland_switch.set_active(self.wayland_active)
+        self.wayland_handler_id = wayland_switch.connect("notify::active", self.on_wayland_activated)
         # System tray 
         tray_switch = Gtk.Switch()
         tray_switch.set_hexpand(False)
@@ -517,15 +547,6 @@ class LayoutBox(Gtk.Box):
         set_highlight_color(col)
         self.current_color = col
 
-    def on_wayland_activated(self, switch, gparam):
-        if switch.get_active():
-            state = "on"
-            enable_wayland()
-        else:
-            state = "off"
-            disable_wayland()
-        print("Wayland was turned", state)
-
     def on_desk_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
@@ -543,6 +564,18 @@ class LayoutBox(Gtk.Box):
             state = "off"
             subprocess.run("gnome-extensions disable appindicatorsupport@rgcjonas.gmail.com", shell=True)
         print("System tray was turned", state)
+
+    def on_wayland_activated(self, switch, gparam):
+        # Toggle state
+        toggle_wayland()
+        # Disconnect the switch
+        switch.disconnect(self.wayland_handler_id)
+        if get_wayland_state():
+            print("Wayland is on")
+            switch.set_active(True)
+        else:
+            print("Wayland is off")
+            switch.set_active(False)
 
     # ------------- branding -------------------------------------------
     def on_branding_activated(self, switch, gparam):
@@ -606,7 +639,7 @@ class LayoutBox(Gtk.Box):
         dialog.destroy()
 
     def on_layoutapply_clicked(self, button):
-        """ apply default layout to user """
+        """ apply defaut layout to user """
         commands = {
             'manjaro': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
@@ -654,10 +687,10 @@ class LayoutBox(Gtk.Box):
         err = None
         for cmd in commands.get(self.layout, ""):
             good, err = shell(cmd)
+        saving = self.layout
         if not good:
             # here we continue commands ... good idea ??
             ret = False
-        saving = self.layout
         if not ret:
             self.dialog_error(f"Error for set layout \"{self.layout}\"", err)
         else:
