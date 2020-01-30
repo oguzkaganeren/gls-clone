@@ -20,6 +20,12 @@
 *.tar
 *.zip
 
+# command setup.py #
+/build
+/dist
+*.egg-info
+
+
 # Logs and databases #
 ######################
 *.log
@@ -38,3 +44,5 @@ Thumbs.db
 .ide*
 .vscode
 .directory
+.pytest*
+__pycache__

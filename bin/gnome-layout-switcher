@@ -3,11 +3,8 @@ import sys
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
-import subprocess
-import shutil
 from pathlib import Path
-import re
-import requests
+from layoutswitcherlib.layoutsbox import LayoutBox
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
@@ -167,21 +164,18 @@ class HeaderBarWindow(Gtk.Window):
     def __init__(self):
         """ initialize main window """
         self.layout = 'manjaro'
-        Gtk.Window.__init__(self, title="Gnome Layout Switcher")
+        Gtk.Window.__init__(self, title="Gnome Layouts Switcher")
+        self.set_default_size(650, 650)
+        self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
         self.set_border_width(1)
-        try: 
+        try:
             self.set_icon_from_file(str(Path(__file__).parent.resolve())+"/../data/gnome-layout-switcher.svg")
         except Exception:
             self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg")
-        
-        self.previews = {}
-        self.color_button = None
-        self._current_color = None
-        # self.set_default_size(300, 300)
 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
-        hb.props.title = "Layout Switcher"
+        hb.props.title = "Layouts Switcher"
         self.set_titlebar(hb)
 
         # Determine preview color and highllight color
@@ -548,15 +542,19 @@ class HeaderBarWindow(Gtk.Window):
 
         get_extensions(self.layout)
 
-        for cmd in commands.get(self.layout, ""):
-            shell(cmd)
-        print("Layout applied")
+        self.app_box = LayoutBox(self)
+        self.main_box.pack_start(self.app_box, True, True, 0)
+        self.main_box.show_all()
 
+        self.connect('delete-event', Gtk.main_quit)
+        self.connect('destroy', self.on_main_window_destroy)
 
+    @staticmethod
+    def on_main_window_destroy(widget):
+        Gtk.main_quit()
 
 
 # Show the window
 win = HeaderBarWindow()
-win.connect("destroy", Gtk.main_quit)
 win.show_all()
 Gtk.main()
