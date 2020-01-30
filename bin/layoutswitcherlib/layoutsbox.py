@@ -364,7 +364,7 @@ class LayoutBox(Gtk.Box):
         desk_switch = Gtk.Switch()
         desk_switch.set_hexpand(False)
         desk_enabled = subprocess.run(
-            "gnome-extensions info desktop-icons@csoriano | grep -q ENABLED", shell=True)
+            "gnome-extensions info ding@rastersoft.com | grep -q ENABLED", shell=True)
         if desk_enabled.returncode == 0:
             desk_switch.set_active(True)
         else:
@@ -373,6 +373,20 @@ class LayoutBox(Gtk.Box):
         desk_label = Gtk.Label()
         desk_label.set_markup("        Desktop icons")
         desk_label.props.halign = Gtk.Align.START
+
+        # Automatic dark theme
+        dark_switch = Gtk.Switch()
+        dark_switch.set_hexpand(False)
+        dark_enabled = subprocess.run(
+            "gnome-extensions info nightthemeswitcher@romainvigier.fr | grep -q ENABLED", shell=True)
+        if dark_enabled.returncode == 0:
+            dark_switch.set_active(True)
+        else:
+            dark_switch.set_active(False)
+        dark_switch.connect("notify::active", self.on_dark_activated)
+        dark_label = Gtk.Label()
+        dark_label.set_markup("        Automatic dark theme")
+        dark_label.props.halign = Gtk.Align.START
 
         # Gnome Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
@@ -433,6 +447,8 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(desk_label, 3, 5, 2, 1)
         theme_grid.attach(tray_switch, 1, 6, 1, 1)
         theme_grid.attach(tray_label, 3, 6, 2, 1)
+        theme_grid.attach(dark_switch, 1, 7, 1, 1)
+        theme_grid.attach(dark_label, 3, 7, 2, 1)
         # theme_grid.attach(self.color_button, 1, 3, 1, 1)
         # theme_grid.attach(color_label, 3, 3, 2, 1)
 
@@ -550,10 +566,21 @@ class LayoutBox(Gtk.Box):
     def on_desk_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
-            subprocess.run("gnome-extensions enable desktop-icons@csoriano", shell=True)
+            subprocess.run("gnome-extensions enable ding@rastersoft.com", shell=True)
         else:
             state = "off"
-            subprocess.run("gnome-extensions disable desktop-icons@csoriano", shell=True)
+            subprocess.run("gnome-extensions disable ding@rastersoft.com", shell=True)
+        print("Desktop icons was turned", state)
+
+    def on_dark_activated(self, switch, gparam):
+        if switch.get_active():
+            state = "on"
+            subprocess.run("gnome-extensions enable nightshellswitcher@romainvigier.fr", shell=True)
+            subprocess.run("gnome-extensions enable nightthemeswitcher@romainvigier.fr", shell=True)
+        else:
+            state = "off"
+            subprocess.run("gnome-extensions disable nightshellswitcher@romainvigier.fr", shell=True)
+            subprocess.run("gnome-extensions disable nightthemeswitcher@romainvigier.fr", shell=True)
         print("Desktop icons was turned", state)
 
     def on_tray_activated(self, switch, gparam):
@@ -654,7 +681,7 @@ class LayoutBox(Gtk.Box):
             'classic': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
                 '\'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
