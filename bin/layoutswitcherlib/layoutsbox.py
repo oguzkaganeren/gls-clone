@@ -550,10 +550,10 @@ class LayoutBox(Gtk.Box):
     def on_desk_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
-            subprocess.run("gnome-extensions enable desktop-icons@csoriano", shell=True)
+            subprocess.run("gnome-extensions enable ding@rastersoft.com", shell=True)
         else:
             state = "off"
-            subprocess.run("gnome-extensions disable desktop-icons@csoriano", shell=True)
+            subprocess.run("gnome-extensions disable ding@rastersoft.com", shell=True)
         print("Desktop icons was turned", state)
 
     def on_tray_activated(self, switch, gparam):
@@ -654,7 +654,7 @@ class LayoutBox(Gtk.Box):
             'classic': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
                 '\'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
