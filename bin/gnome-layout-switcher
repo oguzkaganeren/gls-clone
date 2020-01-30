@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import sys
 import gi
+import subprocess
+import re
+import shutil
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 from pathlib import Path
@@ -8,6 +11,7 @@ from layoutswitcherlib.layoutsbox import LayoutBox
 
 # Define the path to css file
 css_file = Path('~/.config/gtk-3.0/gtk.css').expanduser()
+
 
 class Opacity:
     TOP = 1
@@ -49,6 +53,7 @@ def shell(commands):
             for cmd in commands:
                 subprocess.run(cmd, shell=True)
 
+
 def rm_brand():
     # commands = tuple
     commands = 'pamac-installer --remove manjaro-gdm-branding manjaro-gnome-assets',
@@ -72,6 +77,7 @@ def enable_wayland():
 def disable_wayland():
     commands = 'pkexec sed -i "s/^#WaylandEnable=false/WaylandEnable=false/" /etc/gdm/custom.conf'
     shell(commands)
+
 
 def get_extensions(chosen_layout):
     # List needed extensions
@@ -129,7 +135,7 @@ def get_extensions(chosen_layout):
 def set_highlight_color(new_color):
     """ set highlight color in user file gtk.css """
     # If not present, copy the file from default
-    #TODO re-write : line by line or user Path().read/write
+    # TODO re-write : line by line or user Path().read/write
     try:
         if not Path.is_file(css_file):
             shutil.copyfile('/usr/share/gtk-3.0/gtk.css', css_file)
@@ -142,22 +148,24 @@ def set_highlight_color(new_color):
                 current_color = current_color.group(1)
                 # Replace the old color with new one
                 with open(css_file) as f:
-                    newText = f.read().replace(current_color, new_color, 2)
+                    new_text = f.read().replace(current_color, new_color, 2)
                 # Write the changes
-                with open(css_file, "w") as f:
-                    f.write(newText)
+                with open(css_file, "w") as file:
+                    file.write(new_text)
             except AttributeError:
                 print('Cannot set color. Copy /usr/share/gtk-3.0/gtk.css to ~/.config/gtk-3.0/gtk.css to continue')            
 
     except FileNotFoundError:
         print('Cannot set color, gtk.css not found')
 
+
 def rgba_to_hex(col):
     col.to_string()[4:-1:]
-    col = self.default_color.split(',')
+    col = col.default_color.split(',')
     col = (int(x) for x in col)
     col = '#%02x%02x%02x' % tuple(col)
     return col
+
 
 class HeaderBarWindow(Gtk.Window):
 
@@ -170,8 +178,10 @@ class HeaderBarWindow(Gtk.Window):
         self.set_border_width(1)
         try:
             self.set_icon_from_file(str(Path(__file__).parent.resolve())+"/../data/gnome-layout-switcher.svg")
-        except Exception:
+        except FileNotFoundError:
             self.set_icon_from_file("/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg")
+        except IOError as error:
+            print(error)
 
         hb = Gtk.HeaderBar()
         hb.set_show_close_button(True)
@@ -179,13 +189,11 @@ class HeaderBarWindow(Gtk.Window):
         self.set_titlebar(hb)
 
         # Determine preview color and highllight color
-
         rgba = self.get_style_context().lookup_color('theme_fg_color').color
         self.default_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
 
         rgba = self.get_style_context().lookup_color('theme_selected_bg_color').color
         self.highlight_color = '#{:02x}{:02x}{:02x}'.format(*[int(c*255) for c in rgba]).upper()
-        
 
         # Stack settings
         stack = Gtk.Stack()
@@ -201,10 +209,12 @@ class HeaderBarWindow(Gtk.Window):
         
     def create_page_layout(self, stack):
         """ Layout menu """
-        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0, margin_bottom=1, margin_top=0)
+        vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0,
+                        margin_bottom=1, margin_top=0)
         self.add(vbox)
         vbox.attach(stack, 1, 1, 1, 3)
-        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0, margin_top=15)
+        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0,
+                            margin_top=15)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
         self.btn_layout_first = None
@@ -240,6 +250,7 @@ class HeaderBarWindow(Gtk.Window):
             manjaro_switch.set_active(True)
         else:
             manjaro_switch.set_active(False)
+
         manjaro_switch.connect("notify::active", self.on_branding_activated)
         manjaro_label = Gtk.Label()
         manjaro_label.set_markup("        Manjaro branding")
@@ -253,6 +264,7 @@ class HeaderBarWindow(Gtk.Window):
             wayland_switch.set_active(True)
         else:
             wayland_switch.set_active(False)
+
         wayland_switch.connect("notify::active", self.on_wayland_activated)
         wayland_label = Gtk.Label()
         wayland_label.set_markup("        Wayland session")
@@ -392,11 +404,11 @@ class HeaderBarWindow(Gtk.Window):
         the_grid.attach(event_img, layout['x'], layout['y']+1, 1, 1) # add box and not img in grid
 
     @property
-    def currentColor(self):
+    def current_color(self):
         return self._current_color
 
-    @currentColor.setter
-    def currentColor(self, value):
+    @current_color.setter
+    def current_color(self, value):
         """ assign new curent color :
                 change preview images
                 change btn theme color
@@ -415,6 +427,7 @@ class HeaderBarWindow(Gtk.Window):
                 value = self.highlight_color
             except AttributeError:
                 value = self.highlight_color
+
         self._current_color = value
         self.set_preview_colors(self._current_color)
         ## ??? and (re-)change btn theme color
@@ -438,7 +451,6 @@ class HeaderBarWindow(Gtk.Window):
         else:
             button.image.set_from_file(f"/tmp/{self.layout}preview.svg")
         button.image.set_opacity(state)    # change img opacity from state
-        
 
     def on_over_img(self, box, event, is_over_image):
         """ on mouse over / out : change opacity """
