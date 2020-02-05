@@ -37,9 +37,18 @@ atexit.register(rm_tmp_dir)
 
 def get_layouts():
     return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
-            {"id": "classic", "label": "Classic", "x": 2, "y": 0},
+            {"id": "classic", "label": "Traditional", "x": 2, "y": 0},
             {"id": "modern", "label": " Modern", "x": 1, "y": 3},
+            {"id": "unity", "label": " Unity", "x": 3, "y": 0},
+            {"id": "material-shell", "label": " Tiling", "x": 3, "y": 3},
             {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
+
+def reload_gnome_shell():
+    running_wayland = subprocess.run("pgrep Xwayland", shell=True)
+    if running_wayland.returncode == 0:
+        subprocess.run("pkill gnome-shell", shell=True)
+    else:
+        subprocess.run("gnome-shell --replace", shell=True)
 
 
 def replace_in_file(file_name: str, regex: str, value: str):
@@ -131,6 +140,16 @@ def get_extensions(chosen_layout):
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "unite@hardpixel.eu"
         ),
+        "unity": (
+            "dash-to-dock@micxgx.gmail.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "unite@hardpixel.eu", 
+            "arc-menu@linxgem33.com"
+        ),
+        "material-shell": (
+            "material-shell@papyelgringo",
+            "user-theme@gnome-shell-extensions.gcampax.github.com"
+        ),
         "gnome": (
             "user-theme@gnome-shell-extensions.gcampax.github.com",
         )
@@ -147,6 +166,12 @@ def get_extensions(chosen_layout):
         "modern": ["gnome-shell-extension-dash-to-dock",
                    "gnome-shell-extensions",
                    "gnome-shell-extension-unite"],
+        "unity": ["gnome-shell-extension-dash-to-dock",
+                   "gnome-shell-extensions",
+                   "gnome-shell-extension-unite",
+                   "gnome-shell-extension-arc-menu"],
+        "material-shell": ["gnome-shell-extension-material-shell",
+                   "gnome-shell-extensions"],
         "gnome": ["gnome-shell-extensions"]
     }
 
@@ -295,7 +320,7 @@ class LayoutBox(Gtk.Box):
 
         applybutton = Gtk.Button.new_with_label("Apply")
         applybutton.connect("clicked", self.on_layoutapply_clicked)
-        radiobox.attach(applybutton, 1, 6, 2, 1)
+        radiobox.attach(applybutton, 2, 6, 1, 1)
         applybutton.props.valign = Gtk.Align.END
 
         stack.add_titled(radiobox, "radiobox", "Layout")
@@ -689,6 +714,10 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-layout Default',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
             'modern': (
@@ -704,7 +733,27 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            )
+            ),
+            'material-shell': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'material-shell@papyelgringo\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+            ),
+            'unity': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
+                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-layout UbuntuDash',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu remove-menu-arrow true',
+            ),
 
         }
 
@@ -715,6 +764,8 @@ class LayoutBox(Gtk.Box):
         for cmd in commands.get(self.layout, ""):
             good, err = shell(cmd)
         saving = self.layout
+        with UserConf() as conf:
+            old_layout = conf.read("layout", "manjaro")
         if not good:
             # here we continue commands ... good idea ??
             ret = False
@@ -724,5 +775,9 @@ class LayoutBox(Gtk.Box):
             # save only if not one error
             with UserConf() as conf:
                 self.layout = conf.write({"layout": self.layout})
+                new_layout = self.layout
                 print("Layout applied")
         self.layout = saving
+
+        if new_layout == "material-shell" or old_layout == "material-shell":
+            reload_gnome_shell()
