@@ -46,9 +46,9 @@ def get_layouts():
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
     if running_wayland.returncode == 0:
-        subprocess.run("pkill gnome-shell", shell=True)
+        subprocess.run("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'", shell=True)
     else:
-        subprocess.run("gnome-shell --replace", shell=True)
+        subprocess.run("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'", shell=True)
 
 
 def replace_in_file(file_name: str, regex: str, value: str):
@@ -200,40 +200,6 @@ def get_extensions(chosen_layout):
         shell(f"pamac-installer {' '.join(pkg_list)}")
 
 
-def set_highlight_color(new_color):
-    """ set highlight color in user file gtk.css """
-    # If not present, copy the file from default
-    # TODO re-write : line by line or user Path().read/write
-    try:
-        if not Path.is_file(css_file):
-            shutil.copyfile("/usr/share/gtk-3.0/gtk.css", css_file)
-        # Find the current highlight color
-        with open(css_file) as f:
-            file = f.read()
-            current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-            # TODO use group(1)
-            try:
-                current_color = current_color.group(1)
-                # Replace the old color with new one
-                with open(css_file) as f:
-                    new_text = f.read().replace(current_color, new_color, 2)
-                # Write the changes
-                with open(css_file, "w") as f:
-                    f.write(new_text)
-            except AttributeError:
-                print("Cannot set color. Copy /usr/share/gtk-3.0/gtk.css to ~/.config/gtk-3.0/gtk.css to continue")
-
-    except FileNotFoundError:
-        print("Cannot set color, gtk.css not found")
-
-
-# def rgba_to_hex(col):
-#     col.to_string()[4:-1:]
-#     col = self.default_color.split(",")
-#     col = (int(x) for x in col)
-#     col = "#%02x%02x%02x" % tuple(col)
-#     return col
-
 # ----------------- branding functions --------------------------
 def do_branding(remove: bool) -> tuple:
     arguments = asset
@@ -303,7 +269,10 @@ class LayoutBox(Gtk.Box):
         self.create_page_theme(stack)
         self.current_color = ""  # set colors from .css
         self.show_all()
+        dirty_hack = self.layout
+        self.layout = "manjaro"
         self.previews[self.layout].get_parent().btn.set_active(True)
+        self.previews[dirty_hack].get_parent().btn.set_active(True)
 
     def create_page_layout(self, stack):
         """ Layout menu """
@@ -322,6 +291,11 @@ class LayoutBox(Gtk.Box):
         applybutton.connect("clicked", self.on_layoutapply_clicked)
         radiobox.attach(applybutton, 2, 6, 1, 1)
         applybutton.props.valign = Gtk.Align.END
+
+        reloadbutton = Gtk.Button.new_with_label("Reload gnome")
+        reloadbutton.connect("clicked", self.on_reload_clicked)
+        radiobox.attach(reloadbutton, 3, 6, 1, 1)
+        reloadbutton.props.valign = Gtk.Align.END
 
         stack.add_titled(radiobox, "radiobox", "Layout")
         stack.props.margin_bottom = 0
@@ -434,29 +408,6 @@ class LayoutBox(Gtk.Box):
         goa_label.set_markup("        Online accounts")
         goa_label.props.halign = Gtk.Align.START
 
-        # # Color picker
-        # self.color_button = Gtk.ColorButton()
-        # if Path.is_file(css_file):
-        #     try:
-        #         with open(css_file) as f:
-        #             file = f.read()
-        #             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-        #             current_color = current_color.group(1)
-        #     except AttributeError:
-        #         current_color = self.highlight_color    
-        # else:
-        #     current_color = self.highlight_color
-        # color = Gdk.RGBA()
-        # color.parse(current_color)
-        # color.to_string()
-        # self.color_button.set_rgba(color)
-
-        # color_label = Gtk.Label()
-        # color_label.set_markup("        Application highlight color")
-        # color_label.props.halign = Gtk.Align.START
-        # choosing a color in the dialogue window emits a signal
-        # self.color_button.connect("color-set", self.on_color_chosen)
-
         # Theme tab layout
         theme_grid.attach(dynapaper_button, 1, 0, 1, 1)
         theme_grid.attach(dynapaper_label, 3, 0, 2, 1)
@@ -474,8 +425,6 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(tray_label, 3, 6, 2, 1)
         theme_grid.attach(dark_switch, 1, 7, 1, 1)
         theme_grid.attach(dark_label, 3, 7, 2, 1)
-        # theme_grid.attach(self.color_button, 1, 3, 1, 1)
-        # theme_grid.attach(color_label, 3, 3, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
@@ -690,6 +639,9 @@ class LayoutBox(Gtk.Box):
         dialog.run()
         dialog.destroy()
 
+    def on_reload_clicked(self, button):
+        reload_gnome_shell()
+
     def on_layoutapply_clicked(self, button):
         """ apply defaut layout to user """
         commands = {
@@ -748,11 +700,11 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu menu-layout UbuntuDash',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu remove-menu-arrow true',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
             ),
 
         }
@@ -764,8 +716,6 @@ class LayoutBox(Gtk.Box):
         for cmd in commands.get(self.layout, ""):
             good, err = shell(cmd)
         saving = self.layout
-        with UserConf() as conf:
-            old_layout = conf.read("layout", "manjaro")
         if not good:
             # here we continue commands ... good idea ??
             ret = False
@@ -775,9 +725,5 @@ class LayoutBox(Gtk.Box):
             # save only if not one error
             with UserConf() as conf:
                 self.layout = conf.write({"layout": self.layout})
-                new_layout = self.layout
                 print("Layout applied")
         self.layout = saving
-
-        if new_layout == "material-shell" or old_layout == "material-shell":
-            reload_gnome_shell()
