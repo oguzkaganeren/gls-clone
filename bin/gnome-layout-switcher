@@ -13,7 +13,7 @@ class HeaderBarWindow(Gtk.Window):
         """ initialize main window """
         self.layout = 'manjaro'
         Gtk.Window.__init__(self, title="Gnome Layouts Switcher")
-        self.set_default_size(650, 650)
+        self.set_default_size(650, 550)
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
         self.set_border_width(1)
         try:
