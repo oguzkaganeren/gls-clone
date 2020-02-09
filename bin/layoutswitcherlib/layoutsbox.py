@@ -46,7 +46,7 @@ def get_layouts():
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
     if running_wayland.returncode == 0:
-        subprocess.run("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'", shell=True)
+        subprocess.run("gnome-session-quit --logout", shell=True)
     else:
         subprocess.run("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'", shell=True)
 
@@ -289,25 +289,16 @@ class LayoutBox(Gtk.Box):
     def create_page_layout(self, stack):
         """ Layout menu """
         vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0,
-                        margin_bottom=1, margin_top=0)
+                        margin_bottom=0, margin_top=0)
         self.add(vbox)
         vbox.attach(stack, 1, 1, 1, 3)
-        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0,
+        radiobox = Gtk.Grid(column_spacing=45, row_homogeneous=False, row_spacing=20, margin_left=10, margin_right=10, margin_bottom=0,
                             margin_top=15)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
         for layout in get_layouts():
             self.create_layout_btn(layout=layout, the_grid=radiobox)
 
-        applybutton = Gtk.Button.new_with_label("Apply")
-        applybutton.connect("clicked", self.on_layoutapply_clicked)
-        radiobox.attach(applybutton, 2, 6, 1, 1)
-        applybutton.props.valign = Gtk.Align.END
-
-        reloadbutton = Gtk.Button.new_with_label("Reload gnome")
-        reloadbutton.connect("clicked", self.on_reload_clicked)
-        radiobox.attach(reloadbutton, 3, 6, 1, 1)
-        reloadbutton.props.valign = Gtk.Align.END
 
         stack.add_titled(radiobox, "radiobox", "Layout")
         stack.props.margin_bottom = 0
@@ -316,6 +307,16 @@ class LayoutBox(Gtk.Box):
         stack_switcher.set_hexpand(True)
         stack_switcher.props.halign = Gtk.Align.CENTER
         vbox.attach(stack_switcher, 1, 0, 1, 1)
+
+        applybutton = Gtk.Button.new_with_label("Apply")
+        applybutton.connect("clicked", self.on_layoutapply_clicked)
+        radiobox.attach(applybutton, 3, 6, 1, 1)
+        applybutton.props.valign = Gtk.Align.END
+
+        reloadbutton = Gtk.Button.new_with_label("Reload Desktop")
+        reloadbutton.connect("clicked", self.on_reload_clicked)
+        radiobox.attach(reloadbutton, 2, 6, 1, 1)
+        reloadbutton.props.valign = Gtk.Align.END
 
     def create_page_theme(self, stack):
         """ The theme tab """
