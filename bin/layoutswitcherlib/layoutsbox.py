@@ -40,7 +40,7 @@ def get_layouts():
             {"id": "classic", "label": "Traditional", "x": 2, "y": 0},
             {"id": "modern", "label": " Modern", "x": 1, "y": 3},
             {"id": "unity", "label": " Unity", "x": 3, "y": 0},
-            {"id": "material-shell", "label": " Tiling", "x": 3, "y": 3},
+            {"id": "mate", "label": " Mate", "x": 3, "y": 3},
             {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
 
 def reload_gnome_shell():
@@ -664,12 +664,41 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-running-apps true',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-size 48',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-button-appearance Icon',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu menu-layout Default',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+            ),
+            'mate': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'window-list@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
+                '\'places-menu@gnome-shell-extensions.gcampax.github.com\', \'arc-menu@linxgem33.com\']"',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-running-apps false',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-position TOP',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-size 32',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-button-appearance Text',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications",'
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-layout Simple',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
             'modern': (
