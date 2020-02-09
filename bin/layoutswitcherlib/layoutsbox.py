@@ -707,7 +707,7 @@ class LayoutBox(Gtk.Box):
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu menu-button-appearance Text',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications",'
+                'set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
@@ -737,6 +737,7 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
                 '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
