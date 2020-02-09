@@ -135,6 +135,14 @@ def get_extensions(chosen_layout):
             "appindicatorsupport@rgcjonas.gmail.com",
             "arc-menu@linxgem33.com"
         ),
+        "mate": (
+            "dash-to-panel@jderose9.github.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "window-list@gnome-shell-extensions.gcampax.github.com",
+            "places-menu@gnome-shell-extensions.gcampax.github.com",
+            "appindicatorsupport@rgcjonas.gmail.com",
+            "arc-menu@linxgem33.com"
+        ),
         "modern": (
             "dash-to-dock@micxgx.gmail.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
@@ -160,6 +168,10 @@ def get_extensions(chosen_layout):
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",],
         "classic": ["gnome-shell-extension-dash-to-panel",
+                    "gnome-shell-extensions",
+                    "gnome-shell-extension-appindicator",
+                    "gnome-shell-extension-arc-menu"],
+        "mate": ["gnome-shell-extension-dash-to-panel",
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",
                     "gnome-shell-extension-arc-menu"],
