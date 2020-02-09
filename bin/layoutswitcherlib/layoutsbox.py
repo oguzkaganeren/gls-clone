@@ -37,9 +37,18 @@ atexit.register(rm_tmp_dir)
 
 def get_layouts():
     return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
-            {"id": "classic", "label": "Classic", "x": 2, "y": 0},
+            {"id": "classic", "label": "Traditional", "x": 2, "y": 0},
             {"id": "modern", "label": " Modern", "x": 1, "y": 3},
+            {"id": "unity", "label": " Unity", "x": 3, "y": 0},
+            {"id": "mate", "label": " Mate", "x": 3, "y": 3},
             {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
+
+def reload_gnome_shell():
+    running_wayland = subprocess.run("pgrep Xwayland", shell=True)
+    if running_wayland.returncode == 0:
+        subprocess.run("gnome-session-quit --logout", shell=True)
+    else:
+        subprocess.run("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'", shell=True)
 
 
 def replace_in_file(file_name: str, regex: str, value: str):
@@ -126,10 +135,28 @@ def get_extensions(chosen_layout):
             "appindicatorsupport@rgcjonas.gmail.com",
             "arc-menu@linxgem33.com"
         ),
+        "mate": (
+            "dash-to-panel@jderose9.github.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "window-list@gnome-shell-extensions.gcampax.github.com",
+            "places-menu@gnome-shell-extensions.gcampax.github.com",
+            "appindicatorsupport@rgcjonas.gmail.com",
+            "arc-menu@linxgem33.com"
+        ),
         "modern": (
             "dash-to-dock@micxgx.gmail.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "unite@hardpixel.eu"
+        ),
+        "unity": (
+            "dash-to-dock@micxgx.gmail.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "unite@hardpixel.eu", 
+            "arc-menu@linxgem33.com"
+        ),
+        "material-shell": (
+            "material-shell@papyelgringo",
+            "user-theme@gnome-shell-extensions.gcampax.github.com"
         ),
         "gnome": (
             "user-theme@gnome-shell-extensions.gcampax.github.com",
@@ -144,9 +171,19 @@ def get_extensions(chosen_layout):
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",
                     "gnome-shell-extension-arc-menu"],
+        "mate": ["gnome-shell-extension-dash-to-panel",
+                    "gnome-shell-extensions",
+                    "gnome-shell-extension-appindicator",
+                    "gnome-shell-extension-arc-menu"],
         "modern": ["gnome-shell-extension-dash-to-dock",
                    "gnome-shell-extensions",
                    "gnome-shell-extension-unite"],
+        "unity": ["gnome-shell-extension-dash-to-dock",
+                   "gnome-shell-extensions",
+                   "gnome-shell-extension-unite",
+                   "gnome-shell-extension-arc-menu"],
+        "material-shell": ["gnome-shell-extension-material-shell",
+                   "gnome-shell-extensions"],
         "gnome": ["gnome-shell-extensions"]
     }
 
@@ -174,40 +211,6 @@ def get_extensions(chosen_layout):
         print(f"Needed packages: {' '.join(pkg_list)}")
         shell(f"pamac-installer {' '.join(pkg_list)}")
 
-
-def set_highlight_color(new_color):
-    """ set highlight color in user file gtk.css """
-    # If not present, copy the file from default
-    # TODO re-write : line by line or user Path().read/write
-    try:
-        if not Path.is_file(css_file):
-            shutil.copyfile("/usr/share/gtk-3.0/gtk.css", css_file)
-        # Find the current highlight color
-        with open(css_file) as f:
-            file = f.read()
-            current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-            # TODO use group(1)
-            try:
-                current_color = current_color.group(1)
-                # Replace the old color with new one
-                with open(css_file) as f:
-                    new_text = f.read().replace(current_color, new_color, 2)
-                # Write the changes
-                with open(css_file, "w") as f:
-                    f.write(new_text)
-            except AttributeError:
-                print("Cannot set color. Copy /usr/share/gtk-3.0/gtk.css to ~/.config/gtk-3.0/gtk.css to continue")
-
-    except FileNotFoundError:
-        print("Cannot set color, gtk.css not found")
-
-
-# def rgba_to_hex(col):
-#     col.to_string()[4:-1:]
-#     col = self.default_color.split(",")
-#     col = (int(x) for x in col)
-#     col = "#%02x%02x%02x" % tuple(col)
-#     return col
 
 # ----------------- branding functions --------------------------
 def do_branding(remove: bool) -> tuple:
@@ -278,25 +281,24 @@ class LayoutBox(Gtk.Box):
         self.create_page_theme(stack)
         self.current_color = ""  # set colors from .css
         self.show_all()
+        dirty_hack = self.layout
+        self.layout = "manjaro"
         self.previews[self.layout].get_parent().btn.set_active(True)
+        self.previews[dirty_hack].get_parent().btn.set_active(True)
 
     def create_page_layout(self, stack):
         """ Layout menu """
         vbox = Gtk.Grid(row_homogeneous=False, column_homogeneous=False, row_spacing=0, margin_left=0, margin_right=0,
-                        margin_bottom=1, margin_top=0)
+                        margin_bottom=0, margin_top=0)
         self.add(vbox)
         vbox.attach(stack, 1, 1, 1, 3)
-        radiobox = Gtk.Grid(column_spacing=45, row_spacing=15, margin_left=10, margin_right=10, margin_bottom=0,
+        radiobox = Gtk.Grid(column_spacing=45, row_homogeneous=False, row_spacing=20, margin_left=10, margin_right=10, margin_bottom=0,
                             margin_top=15)
         radiobox.set_hexpand(True)
         radiobox.props.halign = Gtk.Align.CENTER
         for layout in get_layouts():
             self.create_layout_btn(layout=layout, the_grid=radiobox)
 
-        applybutton = Gtk.Button.new_with_label("Apply")
-        applybutton.connect("clicked", self.on_layoutapply_clicked)
-        radiobox.attach(applybutton, 1, 6, 2, 1)
-        applybutton.props.valign = Gtk.Align.END
 
         stack.add_titled(radiobox, "radiobox", "Layout")
         stack.props.margin_bottom = 0
@@ -305,6 +307,16 @@ class LayoutBox(Gtk.Box):
         stack_switcher.set_hexpand(True)
         stack_switcher.props.halign = Gtk.Align.CENTER
         vbox.attach(stack_switcher, 1, 0, 1, 1)
+
+        applybutton = Gtk.Button.new_with_label("Apply")
+        applybutton.connect("clicked", self.on_layoutapply_clicked)
+        radiobox.attach(applybutton, 3, 6, 1, 1)
+        applybutton.props.valign = Gtk.Align.END
+
+        reloadbutton = Gtk.Button.new_with_label("Reload Desktop")
+        reloadbutton.connect("clicked", self.on_reload_clicked)
+        radiobox.attach(reloadbutton, 2, 6, 1, 1)
+        reloadbutton.props.valign = Gtk.Align.END
 
     def create_page_theme(self, stack):
         """ The theme tab """
@@ -409,29 +421,6 @@ class LayoutBox(Gtk.Box):
         goa_label.set_markup("        Online accounts")
         goa_label.props.halign = Gtk.Align.START
 
-        # # Color picker
-        # self.color_button = Gtk.ColorButton()
-        # if Path.is_file(css_file):
-        #     try:
-        #         with open(css_file) as f:
-        #             file = f.read()
-        #             current_color = re.search("^@define-color.*theme_selected_bg_color.*#(.*)", file)
-        #             current_color = current_color.group(1)
-        #     except AttributeError:
-        #         current_color = self.highlight_color    
-        # else:
-        #     current_color = self.highlight_color
-        # color = Gdk.RGBA()
-        # color.parse(current_color)
-        # color.to_string()
-        # self.color_button.set_rgba(color)
-
-        # color_label = Gtk.Label()
-        # color_label.set_markup("        Application highlight color")
-        # color_label.props.halign = Gtk.Align.START
-        # choosing a color in the dialogue window emits a signal
-        # self.color_button.connect("color-set", self.on_color_chosen)
-
         # Theme tab layout
         theme_grid.attach(dynapaper_button, 1, 0, 1, 1)
         theme_grid.attach(dynapaper_label, 3, 0, 2, 1)
@@ -449,8 +438,6 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(tray_label, 3, 6, 2, 1)
         theme_grid.attach(dark_switch, 1, 7, 1, 1)
         theme_grid.attach(dark_label, 3, 7, 2, 1)
-        # theme_grid.attach(self.color_button, 1, 3, 1, 1)
-        # theme_grid.attach(color_label, 3, 3, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
@@ -665,6 +652,9 @@ class LayoutBox(Gtk.Box):
         dialog.run()
         dialog.destroy()
 
+    def on_reload_clicked(self, button):
+        reload_gnome_shell()
+
     def on_layoutapply_clicked(self, button):
         """ apply defaut layout to user """
         commands = {
@@ -687,8 +677,41 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-running-apps true',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-size 48',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-button-appearance Icon',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-layout Default',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+            ),
+            'mate': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'window-list@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
+                '\'places-menu@gnome-shell-extensions.gcampax.github.com\', \'arc-menu@linxgem33.com\']"',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel show-running-apps false',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-position TOP',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
+                'set org.gnome.shell.extensions.dash-to-panel panel-size 32',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-button-appearance Text',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications",'
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-layout Simple',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
             'modern': (
@@ -704,7 +727,27 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            )
+            ),
+            'material-shell': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'material-shell@papyelgringo\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+            ),
+            'unity': (
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
+                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
+                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu menu-layout UbuntuDash',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu remove-menu-arrow true',
+                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
+                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
+            ),
 
         }
 
