@@ -758,6 +758,7 @@ class LayoutBox(Gtk.Box):
         err = None
         for cmd in commands.get(self.layout, ""):
             good, err = shell(cmd)
+        shell('gsettings set org.gnome.shell disable-user-extensions false')
         saving = self.layout
         if not good:
             # here we continue commands ... good idea ??
