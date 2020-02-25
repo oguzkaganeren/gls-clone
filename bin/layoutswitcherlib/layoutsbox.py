@@ -659,20 +659,16 @@ class LayoutBox(Gtk.Box):
         """ apply defaut layout to user """
         commands = {
             'manjaro': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true',
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
             ),
             'classic': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
-                '\'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
@@ -689,13 +685,13 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu menu-layout Default',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
+                '\'arc-menu@linxgem33.com\']"',
             ),
             'mate': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'window-list@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
-                '\'places-menu@gnome-shell-extensions.gcampax.github.com\', \'arc-menu@linxgem33.com\']"',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
                 'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
@@ -712,16 +708,20 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu menu-layout Simple',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
+                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'window-list@gnome-shell-extensions.gcampax.github.com\', '
+                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
+                '\'places-menu@gnome-shell-extensions.gcampax.github.com\', \'arc-menu@linxgem33.com\']"',
             ),
             'modern': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
-                '\'pamac-updates@manjaro.org\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"'
+                'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
+                '\'pamac-updates@manjaro.org\']"',
             ),
             'gnome': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', '
@@ -734,9 +734,6 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
             ),
             'unity': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
-                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
                 'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
@@ -748,6 +745,9 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.arc-menu remove-menu-arrow true',
                 'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
                 'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
+                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
+                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
+                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
             ),
 
         }
