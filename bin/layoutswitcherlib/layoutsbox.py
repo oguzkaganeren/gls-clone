@@ -754,10 +754,6 @@ class LayoutBox(Gtk.Box):
         
         dark_enabled = subprocess.run(
             "gnome-extensions info nightthemeswitcher@romainvigier.fr | grep -q ENABLED", shell=True)
-        icons_enabled = subprocess.run(
-            "gnome-extensions info ding@rastersoft.com | grep -q ENABLED", shell=True)
-        tray_enabled = subprocess.run(
-            "gnome-extensions info appindicatorsupport@rgcjonas.gmail.com | grep -q ENABLED", shell=True)
         get_extensions(self.layout)
         ret = True
         good = True
@@ -768,10 +764,6 @@ class LayoutBox(Gtk.Box):
         if dark_enabled.returncode == 0:
             subprocess.run("gnome-extensions enable nightshellswitcher@romainvigier.fr", shell=True)
             subprocess.run("gnome-extensions enable nightthemeswitcher@romainvigier.fr", shell=True)
-        if icons_enabled.returncode == 0:
-            subprocess.run("gnome-extensions enable ding@rastersoft.com", shell=True)
-        if tray_enabled.returncode == 0:
-            subprocess.run("gnome-extensions enable appindicatorsupport@rgcjonas.gmail.com", shell=True)
         saving = self.layout
         if not good:
             # here we continue commands ... good idea ??
