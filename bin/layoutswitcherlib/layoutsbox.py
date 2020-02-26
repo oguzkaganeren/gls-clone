@@ -721,7 +721,7 @@ class LayoutBox(Gtk.Box):
                 'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"',
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
-                '\'pamac-updates@manjaro.org\']"',
+                '\'pamac-updates@manjaro.org\', \'ding@rastersoft.com\']"',
             ),
             'gnome': (
                 'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', '
@@ -747,7 +747,7 @@ class LayoutBox(Gtk.Box):
                 'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
                 'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
                 '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
-                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\']"',
+                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\', \'ding@rastersoft.com\']"',
             ),
 
         }
