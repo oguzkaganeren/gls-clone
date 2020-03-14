@@ -34,6 +34,180 @@ def rm_tmp_dir():
 
 atexit.register(rm_tmp_dir)
 
+def apply_unity():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    required_extensions = ['dash-to-dock@micxgx.gmail.com',
+    'unite@hardpixel.eu',
+    'arc-menu@linxgem33.com',
+    'ding@rastersoft.com']
+    conflicting_extensions = ['dash-to-panel@jderose9.github.com',
+    'places-menu@gnome-shell-extensions.gcampax.github.com',
+    'material-shell@papyelgringo',
+    'window-list@gnome-shell-extensions.gcampax.github.com',
+    'appindicatorsupport@rgcjonas.gmail.com',]
+
+    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true;\
+        gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
+        gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
+        gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-layout UbuntuDash;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu remove-menu-arrow true;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD;\
+        gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"disabled {ext}")
+    for ext in required_extensions:
+        if ext not in enabled:
+            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            print(f"enabled {ext}")
+    subprocess.run("gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD", shell=True)
+
+def apply_classic():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    required_extensions = ['dash-to-panel@jderose9.github.com', 'arc-menu@linxgem33.com', 'appindicatorsupport@rgcjonas.gmail.com','ding@rastersoft.com']
+    conflicting_extensions = ['dash-to-dock@micxgx.gmail.com', 'unite@hardpixel.eu', 'places-menu@gnome-shell-extensions.gcampax.github.com', 'material-shell@papyelgringo', 'window-list@gnome-shell-extensions.gcampax.github.com']
+
+    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps true;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 48;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-button-appearance Icon;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-layout Default;\
+                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"disabled {ext}")
+    for ext in required_extensions:
+        if ext not in enabled:
+            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            print(f"enabled {ext}")
+
+def apply_modern():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    required_extensions = ['dash-to-dock@micxgx.gmail.com',
+    'unite@hardpixel.eu',
+    'ding@rastersoft.com']
+    conflicting_extensions = ['arc-menu@linxgem33.com',
+    'dash-to-panel@jderose9.github.com',
+    'places-menu@gnome-shell-extensions.gcampax.github.com',
+    'material-shell@papyelgringo',
+    'window-list@gnome-shell-extensions.gcampax.github.com',
+    'appindicatorsupport@rgcjonas.gmail.com',]
+
+    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM;\
+                gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false;\
+                gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false;\
+                gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"', shell=True)
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"disabled {ext}")
+    for ext in required_extensions:
+        if ext not in enabled:
+            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            print(f"enabled {ext}")
+
+def apply_manjaro():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    required_extensions = ['dash-to-dock@micxgx.gmail.com',
+    'appindicatorsupport@rgcjonas.gmail.com']
+    conflicting_extensions = ['dash-to-panel@jderose9.github.com',
+    'unite@hardpixel.eu',
+    'arc-menu@linxgem33.com',
+    'places-menu@gnome-shell-extensions.gcampax.github.com',
+    'material-shell@papyelgringo',
+    'window-list@gnome-shell-extensions.gcampax.github.com',
+    'ding@rastersoft.com']
+
+    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
+                gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false;\
+                gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false;\
+                gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true;\
+                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"disabled {ext}")
+    for ext in required_extensions:
+        if ext not in enabled:
+            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            print(f"enabled {ext}")
+
+def apply_gnome():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    conflicting_extensions = ['dash-to-dock@micxgx.gmail.com',
+    'unite@hardpixel.eu',
+    'arc-menu@linxgem33.com',
+    'ding@rastersoft.com',
+    'dash-to-panel@jderose9.github.com',
+    'places-menu@gnome-shell-extensions.gcampax.github.com',
+    'material-shell@papyelgringo',
+    'window-list@gnome-shell-extensions.gcampax.github.com',
+    'appindicatorsupport@rgcjonas.gmail.com',]
+
+    subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"disabled {ext}")
+
+def apply_mate():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    required_extensions = ['places-menu@gnome-shell-extensions.gcampax.github.com',
+    'dash-to-panel@jderose9.github.com',
+    'arc-menu@linxgem33.com',
+    'window-list@gnome-shell-extensions.gcampax.github.com',
+    'ding@rastersoft.com']
+    conflicting_extensions = ['dash-to-dock@micxgx.gmail.com',
+    'unite@hardpixel.eu',
+    'material-shell@papyelgringo',
+    'appindicatorsupport@rgcjonas.gmail.com',]
+
+    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position TOP;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 32;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-button-appearance Text;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications";\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-layout Simple;\
+                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"disabled {ext}")
+    for ext in required_extensions:
+        if ext not in enabled:
+            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            print(f"enabled {ext}")
+
+def apply_material_shell():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    required_extensions = ['material-shell@papyelgringo']
+    conflicting_extensions = ['dash-to-panel@jderose9.github.com',
+    'places-menu@gnome-shell-extensions.gcampax.github.com',
+    'dash-to-dock@micxgx.gmail.com',
+    'unite@hardpixel.eu',
+    'arc-menu@linxgem33.com',
+    'ding@rastersoft.com',
+    'window-list@gnome-shell-extensions.gcampax.github.com',
+    'appindicatorsupport@rgcjonas.gmail.com',]
+
+    subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    for ext in conflicting_extensions:
+        if ext in enabled:
+            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            print(f"enabled {ext}")
+    for ext in required_extensions:
+        if ext not in enabled:
+            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            print(f"disabled {ext}")
 
 def get_layouts():
     return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
@@ -154,7 +328,7 @@ def get_extensions(chosen_layout):
             "unite@hardpixel.eu", 
             "arc-menu@linxgem33.com"
         ),
-        "material-shell": (
+        "material_shell": (
             "material-shell@papyelgringo",
             "user-theme@gnome-shell-extensions.gcampax.github.com"
         ),
@@ -182,7 +356,7 @@ def get_extensions(chosen_layout):
                    "gnome-shell-extensions",
                    "gnome-shell-extension-unite",
                    "gnome-shell-extension-arc-menu"],
-        "material-shell": ["gnome-shell-extension-material-shell",
+        "material_shell": ["gnome-shell-extension-material-shell",
                    "gnome-shell-extensions"],
         "gnome": ["gnome-shell-extensions"]
     }
@@ -657,114 +831,20 @@ class LayoutBox(Gtk.Box):
 
     def on_layoutapply_clicked(self, button):
         """ apply defaut layout to user """
-        commands = {
-            'manjaro': (
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'pamac-updates@manjaro.org\']"',
-            ),
-            'classic': (
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel show-running-apps true',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel panel-size 48',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu menu-button-appearance Icon',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu menu-layout Default',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
-                '\'arc-menu@linxgem33.com\']"',
-            ),
-            'mate': (
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel show-running-apps false',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel panel-position TOP',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas '
-                'set org.gnome.shell.extensions.dash-to-panel panel-size 32',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu menu-button-appearance Text',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications"',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu menu-layout Simple',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-panel@jderose9.github.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'window-list@gnome-shell-extensions.gcampax.github.com\', '
-                '\'appindicatorsupport@rgcjonas.gmail.com\', \'ding@rastersoft.com\', \'pamac-updates@manjaro.org\', '
-                '\'places-menu@gnome-shell-extensions.gcampax.github.com\', \'arc-menu@linxgem33.com\']"',
-            ),
-            'modern': (
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"',
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
-                '\'pamac-updates@manjaro.org\', \'ding@rastersoft.com\']"',
-            ),
-            'gnome': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            ),
-            'material-shell': (
-                'gsettings set org.gnome.shell enabled-extensions "[\'pamac-updates@manjaro.org\', \'material-shell@papyelgringo\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\']"',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"'
-            ),
-            'unity': (
-                'gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true',
-                'gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true',
-                'gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu menu-layout UbuntuDash',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu remove-menu-arrow true',
-                'gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas '
-                'set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD',
-                'gsettings set org.gnome.shell enabled-extensions "[\'dash-to-dock@micxgx.gmail.com\', '
-                '\'user-theme@gnome-shell-extensions.gcampax.github.com\', \'unite@hardpixel.eu\', '
-                '\'pamac-updates@manjaro.org\', \'arc-menu@linxgem33.com\', \'ding@rastersoft.com\']"',
-            ),
-
-        }
-        
-        dark_enabled = subprocess.run(
-            "gnome-extensions info nightthemeswitcher@romainvigier.fr | grep -q ENABLED", shell=True)
-        get_extensions(self.layout)
+        #get_extensions(self.layout)
         ret = True
         good = True
         err = None
-        for cmd in commands.get(self.layout, ""):
-            good, err = shell(cmd)
+
+        switch_layout = f"apply_{self.layout}()"
+        eval(switch_layout)
         shell('gsettings set org.gnome.shell disable-user-extensions false')
-        if dark_enabled.returncode == 0:
-            subprocess.run("gnome-extensions enable nightshellswitcher@romainvigier.fr", shell=True)
-            subprocess.run("gnome-extensions enable nightthemeswitcher@romainvigier.fr", shell=True)
         saving = self.layout
+        with UserConf() as conf:
+            old_layout = conf.read("layout", "manjaro")
+            if old_layout == "material_shell":
+                reload_gnome_shell()
+
         if not good:
             # here we continue commands ... good idea ??
             ret = False
