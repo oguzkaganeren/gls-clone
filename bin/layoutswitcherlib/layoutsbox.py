@@ -36,15 +36,19 @@ atexit.register(rm_tmp_dir)
 
 def apply_unity():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ['dash-to-dock@micxgx.gmail.com',
-    'unite@hardpixel.eu',
-    'arc-menu@linxgem33.com',
-    'ding@rastersoft.com']
-    conflicting_extensions = ['dash-to-panel@jderose9.github.com',
-    'places-menu@gnome-shell-extensions.gcampax.github.com',
-    'material-shell@papyelgringo',
-    'window-list@gnome-shell-extensions.gcampax.github.com',
-    'appindicatorsupport@rgcjonas.gmail.com',]
+    required_extensions = (
+        'dash-to-dock@micxgx.gmail.com',
+        'unite@hardpixel.eu',
+        'arc-menu@linxgem33.com',
+        'ding@rastersoft.com'
+        )
+    conflicting_extensions = (
+        'dash-to-panel@jderose9.github.com',
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'material-shell@papyelgringo',
+        'window-list@gnome-shell-extensions.gcampax.github.com',
+        'appindicatorsupport@rgcjonas.gmail.com'
+        )
 
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
@@ -66,8 +70,19 @@ def apply_unity():
 
 def apply_classic():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ['dash-to-panel@jderose9.github.com', 'arc-menu@linxgem33.com', 'appindicatorsupport@rgcjonas.gmail.com','ding@rastersoft.com']
-    conflicting_extensions = ['dash-to-dock@micxgx.gmail.com', 'unite@hardpixel.eu', 'places-menu@gnome-shell-extensions.gcampax.github.com', 'material-shell@papyelgringo', 'window-list@gnome-shell-extensions.gcampax.github.com']
+    required_extensions = (
+        'dash-to-panel@jderose9.github.com',
+        'arc-menu@linxgem33.com',
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'ding@rastersoft.com'
+        )
+    conflicting_extensions = (
+        'dash-to-dock@micxgx.gmail.com',
+        'unite@hardpixel.eu',
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'material-shell@papyelgringo',
+        'window-list@gnome-shell-extensions.gcampax.github.com'
+        )
 
     subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
@@ -89,15 +104,19 @@ def apply_classic():
 
 def apply_modern():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ['dash-to-dock@micxgx.gmail.com',
-    'unite@hardpixel.eu',
-    'ding@rastersoft.com']
-    conflicting_extensions = ['arc-menu@linxgem33.com',
-    'dash-to-panel@jderose9.github.com',
-    'places-menu@gnome-shell-extensions.gcampax.github.com',
-    'material-shell@papyelgringo',
-    'window-list@gnome-shell-extensions.gcampax.github.com',
-    'appindicatorsupport@rgcjonas.gmail.com',]
+    required_extensions = (
+        'dash-to-dock@micxgx.gmail.com',
+        'unite@hardpixel.eu',
+        'ding@rastersoft.com'
+        )
+    conflicting_extensions = (
+        'arc-menu@linxgem33.com',
+        'dash-to-panel@jderose9.github.com',
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'material-shell@papyelgringo',
+        'window-list@gnome-shell-extensions.gcampax.github.com',
+        'appindicatorsupport@rgcjonas.gmail.com'
+        )
 
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM;\
                 gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false;\
@@ -114,15 +133,19 @@ def apply_modern():
 
 def apply_manjaro():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ['dash-to-dock@micxgx.gmail.com',
-    'appindicatorsupport@rgcjonas.gmail.com']
-    conflicting_extensions = ['dash-to-panel@jderose9.github.com',
-    'unite@hardpixel.eu',
-    'arc-menu@linxgem33.com',
-    'places-menu@gnome-shell-extensions.gcampax.github.com',
-    'material-shell@papyelgringo',
-    'window-list@gnome-shell-extensions.gcampax.github.com',
-    'ding@rastersoft.com']
+    required_extensions = (
+        'dash-to-dock@micxgx.gmail.com',
+        'appindicatorsupport@rgcjonas.gmail.com'
+        )
+    conflicting_extensions = (
+        'dash-to-panel@jderose9.github.com',
+        'unite@hardpixel.eu',
+        'arc-menu@linxgem33.com',
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'material-shell@papyelgringo',
+        'window-list@gnome-shell-extensions.gcampax.github.com',
+        'ding@rastersoft.com'
+        )
 
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
                 gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false;\
@@ -140,15 +163,17 @@ def apply_manjaro():
 
 def apply_gnome():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    conflicting_extensions = ['dash-to-dock@micxgx.gmail.com',
-    'unite@hardpixel.eu',
-    'arc-menu@linxgem33.com',
-    'ding@rastersoft.com',
-    'dash-to-panel@jderose9.github.com',
-    'places-menu@gnome-shell-extensions.gcampax.github.com',
-    'material-shell@papyelgringo',
-    'window-list@gnome-shell-extensions.gcampax.github.com',
-    'appindicatorsupport@rgcjonas.gmail.com',]
+    conflicting_extensions = (
+        'dash-to-dock@micxgx.gmail.com',
+        'unite@hardpixel.eu',
+        'arc-menu@linxgem33.com',
+        'ding@rastersoft.com',
+        'dash-to-panel@jderose9.github.com',
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'material-shell@papyelgringo',
+        'window-list@gnome-shell-extensions.gcampax.github.com',
+        'appindicatorsupport@rgcjonas.gmail.com'
+        )
 
     subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     
@@ -159,15 +184,19 @@ def apply_gnome():
 
 def apply_mate():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ['places-menu@gnome-shell-extensions.gcampax.github.com',
-    'dash-to-panel@jderose9.github.com',
-    'arc-menu@linxgem33.com',
-    'window-list@gnome-shell-extensions.gcampax.github.com',
-    'ding@rastersoft.com']
-    conflicting_extensions = ['dash-to-dock@micxgx.gmail.com',
-    'unite@hardpixel.eu',
-    'material-shell@papyelgringo',
-    'appindicatorsupport@rgcjonas.gmail.com',]
+    required_extensions = (
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'dash-to-panel@jderose9.github.com',
+        'arc-menu@linxgem33.com',
+        'window-list@gnome-shell-extensions.gcampax.github.com',
+        'ding@rastersoft.com'
+        )
+    conflicting_extensions = (
+        'dash-to-dock@micxgx.gmail.com',
+        'unite@hardpixel.eu',
+        'material-shell@papyelgringo',
+        'appindicatorsupport@rgcjonas.gmail.com'
+        )
 
     subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
@@ -189,15 +218,17 @@ def apply_mate():
 
 def apply_material_shell():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ['material-shell@papyelgringo']
-    conflicting_extensions = ['dash-to-panel@jderose9.github.com',
-    'places-menu@gnome-shell-extensions.gcampax.github.com',
-    'dash-to-dock@micxgx.gmail.com',
-    'unite@hardpixel.eu',
-    'arc-menu@linxgem33.com',
-    'ding@rastersoft.com',
-    'window-list@gnome-shell-extensions.gcampax.github.com',
-    'appindicatorsupport@rgcjonas.gmail.com',]
+    required_extensions = ('material-shell@papyelgringo')
+    conflicting_extensions = (
+        'dash-to-panel@jderose9.github.com',
+        'places-menu@gnome-shell-extensions.gcampax.github.com',
+        'dash-to-dock@micxgx.gmail.com',
+        'unite@hardpixel.eu',
+        'arc-menu@linxgem33.com',
+        'ding@rastersoft.com',
+        'window-list@gnome-shell-extensions.gcampax.github.com',
+        'appindicatorsupport@rgcjonas.gmail.com'
+        )
 
     subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
