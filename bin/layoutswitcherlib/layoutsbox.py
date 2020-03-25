@@ -19,7 +19,7 @@ css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
 temp_dir = tempfile.mkdtemp()
 
 # Define asset in use
-asset = ["manjaro-gnome-assets-19.0", "manjaro-gdm-branding"]
+asset = ["manjaro-gnome-assets-19.0", "manjaro-gdm-branding", "manjaro-gdm-theme"]
 
 
 class Opacity:
@@ -58,6 +58,8 @@ def apply_unity():
         gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu remove-menu-arrow true;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD;\
         gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    
+
     for ext in conflicting_extensions:
         if ext in enabled:
             subprocess.run(f'gnome-extensions disable {ext}', shell=True)
@@ -423,9 +425,9 @@ def do_branding(remove: bool) -> tuple:
     if not isinstance(asset, str):
         arguments = " ".join(asset)
     if remove:
-        commands = f"pkexec pamac remove --no-confirm {arguments}"
+        commands = f"pamac-installer --remove  {arguments}"
     else:
-        commands = f"pkexec pamac install --no-confirm {arguments}"
+        commands = f"pamac-installer  {arguments}"
     return shell(commands)
 
 
@@ -525,16 +527,21 @@ class LayoutBox(Gtk.Box):
 
     def create_page_theme(self, stack):
         """ The theme tab """
-        theme_grid = Gtk.Grid(row_spacing=20, margin_left=40, margin_right=40, margin_bottom=0, margin_top=15)
+        theme_grid = Gtk.Grid(row_spacing=15, column_spacing=50, margin_left=40, margin_right=40, margin_bottom=0, margin_top=30)
         theme_grid.set_hexpand(False)
-        theme_grid.props.valign = Gtk.Align.START
-        theme_grid.set_vexpand(True)
+        theme_grid.props.valign = Gtk.Align.CENTER
+        theme_grid.props.halign = Gtk.Align.CENTER
+        theme_grid.props.row_homogeneous = True
+        theme_grid.props.column_homogeneous = False
+        # theme_grid.props.column_spacing = 30
+        theme_grid.set_vexpand(False)
         stack.add_titled(theme_grid, "theme_grid", "Settings")
 
         # ----------------------------------------------
         # Manjaro branding toggle
         manjaro_switch = Gtk.Switch()
-        manjaro_switch.set_hexpand(False)
+        manjaro_switch.props.valign = Gtk.Align.CENTER
+        manjaro_switch.props.halign = Gtk.Align.CENTER
 
         # get branding state True/False
         self.branding_active = get_asset_state()
@@ -544,12 +551,13 @@ class LayoutBox(Gtk.Box):
         # ----------------------------------------------
 
         manjaro_label = Gtk.Label()
-        manjaro_label.set_markup("        Manjaro branding")
+        manjaro_label.set_markup("Manjaro branding")
         manjaro_label.props.halign = Gtk.Align.START
 
         # wayland toggle
         wayland_switch = Gtk.Switch()
-        wayland_switch.set_hexpand(False)
+        wayland_switch.props.valign = Gtk.Align.CENTER
+        wayland_switch.props.halign = Gtk.Align.CENTER
 
         if get_wayland_state():
             wayland_switch.set_active(True)
@@ -557,7 +565,7 @@ class LayoutBox(Gtk.Box):
             wayland_switch.set_active(False)
         wayland_switch.connect("notify::active", self.on_wayland_activated)
         wayland_label = Gtk.Label()
-        wayland_label.set_markup("        Wayland session")
+        wayland_label.set_markup("Wayland session")
         wayland_label.props.halign = Gtk.Align.START
 
         self.wayland_active = get_wayland_state()
@@ -565,7 +573,8 @@ class LayoutBox(Gtk.Box):
         self.wayland_handler_id = wayland_switch.connect("notify::active", self.on_wayland_activated)
         # System tray 
         tray_switch = Gtk.Switch()
-        tray_switch.set_hexpand(False)
+        tray_switch.props.valign = Gtk.Align.CENTER
+        tray_switch.props.halign = Gtk.Align.CENTER
         tray_enabled = subprocess.run(
             "gnome-extensions info appindicatorsupport@rgcjonas.gmail.com | grep -q ENABLED", shell=True)
         if tray_enabled.returncode == 0:
@@ -574,12 +583,13 @@ class LayoutBox(Gtk.Box):
             tray_switch.set_active(False)
         tray_switch.connect("notify::active", self.on_tray_activated)
         tray_label = Gtk.Label()
-        tray_label.set_markup("        System tray")
+        tray_label.set_markup("System tray")
         tray_label.props.halign = Gtk.Align.START
 
         # Desktop icons
         desk_switch = Gtk.Switch()
-        desk_switch.set_hexpand(False)
+        desk_switch.props.valign = Gtk.Align.CENTER
+        desk_switch.props.halign = Gtk.Align.CENTER
         desk_enabled = subprocess.run(
             "gnome-extensions info ding@rastersoft.com | grep -q ENABLED", shell=True)
         if desk_enabled.returncode == 0:
@@ -588,12 +598,13 @@ class LayoutBox(Gtk.Box):
             desk_switch.set_active(False)
         desk_switch.connect("notify::active", self.on_desk_activated)
         desk_label = Gtk.Label()
-        desk_label.set_markup("        Desktop icons")
+        desk_label.set_markup("Desktop icons")
         desk_label.props.halign = Gtk.Align.START
 
         # Automatic dark theme
         dark_switch = Gtk.Switch()
-        dark_switch.set_hexpand(False)
+        dark_switch.props.valign = Gtk.Align.CENTER
+        dark_switch.props.halign = Gtk.Align.CENTER
         dark_enabled = subprocess.run(
             "gnome-extensions info nightthemeswitcher@romainvigier.fr | grep -q ENABLED", shell=True)
         if dark_enabled.returncode == 0:
@@ -602,47 +613,75 @@ class LayoutBox(Gtk.Box):
             dark_switch.set_active(False)
         dark_switch.connect("notify::active", self.on_dark_activated)
         dark_label = Gtk.Label()
-        dark_label.set_markup("        Automatic dark theme")
+        dark_label.set_markup("Automatic dark theme")
         dark_label.props.halign = Gtk.Align.START
 
         # Gnome Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
         theme_button.connect("clicked", self.on_gnometweaks_activated)
+        theme_button.props.valign = Gtk.Align.CENTER
+        theme_button.props.halign = Gtk.Align.CENTER
         theme_label = Gtk.Label()
-        theme_label.set_markup("        Gnome tweak tool")
+        theme_label.set_markup("Gnome tweak tool")
         theme_label.props.halign = Gtk.Align.START
 
+        # Gesture settings
+        gesture_button = Gtk.Button.new_with_label("Open")
+        gesture_button.connect("clicked", self.on_gest_activated)
+        gesture_button.props.valign = Gtk.Align.CENTER
+        gesture_button.props.halign = Gtk.Align.CENTER
+        gesture_label = Gtk.Label()
+        gesture_label.set_markup("Gesture settings")
+        gesture_label.props.halign = Gtk.Align.START
+
+        # Gnome Extensions
+        ext_button = Gtk.Button.new_with_label("Open")
+        ext_button.connect("clicked", self.on_gnomext_activated)
+        ext_button.props.valign = Gtk.Align.CENTER
+        ext_button.props.halign = Gtk.Align.CENTER
+        ext_label = Gtk.Label()
+        ext_label.set_markup("Gnome extensions")
+        ext_label.props.halign = Gtk.Align.START
+        
         # Dynamic wallpaper
         dynapaper_button = Gtk.Button.new_with_label("Open")
         dynapaper_button.connect("clicked", self.on_dynapaper_activated)
+        dynapaper_button.props.valign = Gtk.Align.CENTER
+        dynapaper_button.props.halign = Gtk.Align.CENTER
         dynapaper_label = Gtk.Label()
-        dynapaper_label.set_markup("        Dynamic wallpaper settings")
+        dynapaper_label.set_markup("Dynamic wallpaper")
         dynapaper_label.props.halign = Gtk.Align.START
 
-        # Gnome Tweaks
+        # Gnome online accounts
         goa_button = Gtk.Button.new_with_label("Open")
         goa_button.connect("clicked", self.on_goa_activated)
+        goa_button.props.valign = Gtk.Align.CENTER
+        goa_button.props.halign = Gtk.Align.CENTER
         goa_label = Gtk.Label()
-        goa_label.set_markup("        Online accounts")
+        goa_label.set_markup("Online accounts")
         goa_label.props.halign = Gtk.Align.START
 
         # Theme tab layout
-        theme_grid.attach(dynapaper_button, 1, 0, 1, 1)
-        theme_grid.attach(dynapaper_label, 3, 0, 2, 1)
-        theme_grid.attach(theme_button, 1, 1, 1, 1)
-        theme_grid.attach(theme_label, 3, 1, 2, 1)
-        theme_grid.attach(goa_button, 1, 2, 1, 1)
-        theme_grid.attach(goa_label, 3, 2, 2, 1)
-        theme_grid.attach(manjaro_switch, 1, 3, 1, 1)
-        theme_grid.attach(manjaro_label, 3, 3, 2, 1)
-        theme_grid.attach(wayland_switch, 1, 4, 1, 1)
-        theme_grid.attach(wayland_label, 3, 4, 2, 1)
-        theme_grid.attach(desk_switch, 1, 5, 1, 1)
-        theme_grid.attach(desk_label, 3, 5, 2, 1)
-        theme_grid.attach(tray_switch, 1, 6, 1, 1)
-        theme_grid.attach(tray_label, 3, 6, 2, 1)
-        theme_grid.attach(dark_switch, 1, 7, 1, 1)
-        theme_grid.attach(dark_label, 3, 7, 2, 1)
+        theme_grid.attach(dynapaper_button, 3, 0, 1, 1)
+        theme_grid.attach(dynapaper_label, 1, 0, 2, 1)
+        theme_grid.attach(theme_button, 3, 1, 1, 1)
+        theme_grid.attach(theme_label, 1, 1, 2, 1)
+        theme_grid.attach(goa_button, 3, 2, 1, 1)
+        theme_grid.attach(goa_label, 1, 2, 2, 1)
+        theme_grid.attach(ext_button, 3, 3, 1, 1)
+        theme_grid.attach(ext_label, 1, 3, 2, 1)
+        theme_grid.attach(gesture_button, 3, 4, 1, 1)
+        theme_grid.attach(gesture_label, 1, 4, 2, 1)
+        theme_grid.attach(manjaro_switch, 6, 0, 1, 1)
+        theme_grid.attach(manjaro_label, 4, 0, 2, 1)
+        theme_grid.attach(wayland_switch, 6, 1, 1, 1)
+        theme_grid.attach(wayland_label, 4, 1, 2, 1)
+        theme_grid.attach(desk_switch, 6, 2, 1, 1)
+        theme_grid.attach(desk_label, 4, 2, 2, 1)
+        theme_grid.attach(tray_switch, 6, 3, 1, 1)
+        theme_grid.attach(tray_label, 4, 3, 2, 1)
+        theme_grid.attach(dark_switch, 6, 4, 1, 1)
+        theme_grid.attach(dark_label, 4, 4, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
@@ -831,7 +870,13 @@ class LayoutBox(Gtk.Box):
     # ------------- end branding ---------------------------------------
 
     def on_gnometweaks_activated(self, button):
-        subprocess.Popen("gnome-tweaks", shell=True)
+        subprocess.Popen("gnome-tweaks")
+
+    def on_gnomext_activated(self, button):
+        subprocess.Popen("gnome-shell-extension-prefs")
+
+    def on_gest_activated(self, button):
+        subprocess.Popen("gestures")
 
     def on_goa_activated(self, button):
         subprocess.Popen("gnome-control-center online-accounts", shell=True)
