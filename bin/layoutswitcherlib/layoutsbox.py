@@ -35,6 +35,7 @@ def rm_tmp_dir():
 atexit.register(rm_tmp_dir)
 
 def apply_unity():
+    subprocess.run('gnome-extensions disable arc-menu@linxgem33.com', shell=True)
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
