@@ -322,7 +322,8 @@ def toggle_wayland():
 
 
 def get_wayland_state():
-    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True)
+    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf || \
+        [[ $(lspci -v | perl -ne '/VGA/../^$/ and /VGA|Kern/ and print' | awk 'NR == 2 {print $5}') == nvidia ]]", shell=True)
     if wayland_enabled.returncode == 1:
         return True
     else:
