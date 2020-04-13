@@ -21,7 +21,7 @@ temp_dir = tempfile.mkdtemp()
 # Define asset in use
 asset = ["manjaro-gnome-assets-19.0", "manjaro-gdm-branding", "manjaro-gdm-theme"]
 
-nvidia_present = subprocess.run("[[ $(lspci -v | perl -ne '/VGA/../^$/ and /VGA|Kern/ and print' | awk 'NR == 2 {print $5}') == nvidia ]]", shell=True)
+nvidia_present = subprocess.run('lspci -v | grep -q "Kernel driver in use: nvidia"', shell=True).returncode == 0
 
 
 class Opacity:
@@ -324,8 +324,8 @@ def toggle_wayland():
 
 
 def get_wayland_state():
-    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True)
-    if wayland_enabled.returncode == 1 and nvidia_present.returncode == 1:
+    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True).returncode == 0
+    if wayland_enabled and not nvidia_present:
         return True
     else:
         return False
@@ -566,7 +566,7 @@ class LayoutBox(Gtk.Box):
             wayland_switch.set_active(True)
         else:
             wayland_switch.set_active(False)
-        if nvidia_present.returncode == 0:
+        if nvidia_present:
             wayland_switch.set_sensitive(False)
         wayland_switch.connect("notify::active", self.on_wayland_activated)
         wayland_label = Gtk.Label()
