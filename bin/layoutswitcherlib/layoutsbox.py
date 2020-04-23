@@ -324,7 +324,7 @@ def toggle_wayland():
 
 
 def get_wayland_state():
-    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True).returncode == 0
+    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True).returncode == 1
     if wayland_enabled and not nvidia_present:
         return True
     else:
