@@ -19,7 +19,7 @@ css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
 temp_dir = tempfile.mkdtemp()
 
 # Define asset in use
-asset = ["manjaro-gnome-assets-19.0", "manjaro-gdm-branding", "manjaro-gdm-theme"]
+asset = ["manjaro-gnome-assets", "manjaro-gdm-branding", "manjaro-gdm-theme"]
 
 nvidia_present = subprocess.run('lspci -v | grep -q "Kernel driver in use: nvidia"', shell=True).returncode == 0
 
