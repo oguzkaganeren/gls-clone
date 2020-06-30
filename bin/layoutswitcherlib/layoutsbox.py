@@ -811,11 +811,9 @@ class LayoutBox(Gtk.Box):
     def on_dark_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
-            subprocess.run("gnome-extensions enable nightshellswitcher@romainvigier.fr", shell=True)
             subprocess.run("gnome-extensions enable nightthemeswitcher@romainvigier.fr", shell=True)
         else:
             state = "off"
-            subprocess.run("gnome-extensions disable nightshellswitcher@romainvigier.fr", shell=True)
             subprocess.run("gnome-extensions disable nightthemeswitcher@romainvigier.fr", shell=True)
         print("Automatic dark theme was turned", state)
 
