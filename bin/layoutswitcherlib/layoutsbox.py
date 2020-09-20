@@ -89,7 +89,7 @@ def apply_classic():
         'window-list@gnome-shell-extensions.gcampax.github.com'
         )
 
-    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false;\
+    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps true;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 48;\
@@ -203,7 +203,7 @@ def apply_mate():
         'appindicatorsupport@rgcjonas.gmail.com'
         )
 
-    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-show-apps-button false;\
+    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position TOP;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 32;\
@@ -239,18 +239,16 @@ def apply_material_shell():
     for ext in conflicting_extensions:
         if ext in enabled:
             subprocess.run(f'gnome-extensions disable {ext}', shell=True)
-            print(f"enabled {ext}")
-    for ext in required_extensions:
-        if ext not in enabled:
-            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
             print(f"disabled {ext}")
+    subprocess.run(f'gnome-extensions enable material-shell@papyelgringo', shell=True)
+    print(f"enabled material-shell@papyelgringo")
 
 def get_layouts():
     return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
             {"id": "classic", "label": "Traditional", "x": 2, "y": 0},
             {"id": "modern", "label": " Modern", "x": 1, "y": 3},
             {"id": "unity", "label": " Unity", "x": 3, "y": 0},
-            {"id": "mate", "label": " Mate", "x": 3, "y": 3},
+            {"id": "material_shell", "label": " Tiling", "x": 3, "y": 3},
             {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
 
 def reload_gnome_shell():
@@ -921,8 +919,8 @@ class LayoutBox(Gtk.Box):
         saving = self.layout
         with UserConf() as conf:
             old_layout = conf.read("layout", "manjaro")
-            if old_layout == "material_shell":
-                reload_gnome_shell()
+            # if old_layout == "material_shell":
+                # reload_gnome_shell()
 
         if not good:
             # here we continue commands ... good idea ??
