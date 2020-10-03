@@ -33,7 +33,7 @@ setup(
             'data/pictures/modernpreview.svg',
             'data/pictures/manjaropreview.svg',
             'data/pictures/matepreview.svg',
-            'data/pictures/material-shellpreview.svg',
+            'data/pictures/material_shellpreview.svg',
             'data/pictures/unitypreview.svg',
             'data/pictures/classicpreview.svg',
          ]),
