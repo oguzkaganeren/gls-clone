@@ -488,11 +488,15 @@ class LayoutBox(Gtk.Box):
         self.create_page_layout(stack)
         self.create_page_theme(stack)
         self.current_color = ""  # set colors from .css
+
+        # activate default layout
+        save = self.layout
+        other = 'manjaro' if save == 'gnome' else 'gnome'
+        self.previews[other].get_parent().btn.set_active(True) # always select bad
+        self.previews[save].get_parent().btn.set_active(True) # always change btn
+
         self.show_all()
-        dirty_hack = self.layout
-        self.layout = "manjaro"
-        self.previews[self.layout].get_parent().btn.set_active(True)
-        self.previews[dirty_hack].get_parent().btn.set_active(True)
+
 
     def create_page_layout(self, stack):
         """ Layout menu """
