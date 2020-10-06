@@ -37,12 +37,12 @@ def rm_tmp_dir():
 atexit.register(rm_tmp_dir)
 
 def apply_unity():
-    subprocess.run('gnome-extensions disable arc-menu@linxgem33.com', shell=True)
+    subprocess.run('gnome-extensions disable arcmenu@arcmenu.com', shell=True)
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
         'unite@hardpixel.eu',
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'ding@rastersoft.com'
         )
     conflicting_extensions = (
@@ -57,9 +57,11 @@ def apply_unity():
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
         gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-layout UbuntuDash;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu remove-menu-arrow true;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout UbuntuDash;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 2;\
         gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     
 
@@ -71,13 +73,13 @@ def apply_unity():
         if ext not in enabled:
             subprocess.run(f'gnome-extensions enable {ext}', shell=True)
             print(f"enabled {ext}")
-    subprocess.run("gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTD", shell=True)
+    subprocess.run("gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD", shell=True)
 
 def apply_classic():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-panel@jderose9.github.com',
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'appindicatorsupport@rgcjonas.gmail.com',
         'ding@rastersoft.com'
         )
@@ -93,10 +95,12 @@ def apply_classic():
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps true;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 48;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu custom-menu-button-icon-size 32.0;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-button-appearance Icon;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-layout Default;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu custom-menu-button-icon-size 32.0;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-appearance Icon;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Default;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 2;\
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
@@ -115,7 +119,7 @@ def apply_modern():
         'ding@rastersoft.com'
         )
     conflicting_extensions = (
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'dash-to-panel@jderose9.github.com',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
@@ -145,7 +149,7 @@ def apply_manjaro():
     conflicting_extensions = (
         'dash-to-panel@jderose9.github.com',
         'unite@hardpixel.eu',
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
@@ -171,7 +175,7 @@ def apply_gnome():
     conflicting_extensions = (
         'dash-to-dock@micxgx.gmail.com',
         'unite@hardpixel.eu',
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'ding@rastersoft.com',
         'dash-to-panel@jderose9.github.com',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
@@ -192,7 +196,7 @@ def apply_mate():
     required_extensions = (
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'dash-to-panel@jderose9.github.com',
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'ding@rastersoft.com'
         )
@@ -207,10 +211,10 @@ def apply_mate():
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position TOP;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 32;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-button-appearance Text;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu custom-menu-button-text " Applications";\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu arc-menu-placement DTP;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arc-menu@linxgem33.com/schemas set org.gnome.shell.extensions.arc-menu menu-layout Simple;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-appearance Text;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu custom-menu-button-text " Applications";\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Simple;\
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
@@ -229,7 +233,7 @@ def apply_material_shell():
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'dash-to-dock@micxgx.gmail.com',
         'unite@hardpixel.eu',
-        'arc-menu@linxgem33.com',
+        'arcmenu@arcmenu.com',
         'ding@rastersoft.com',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'appindicatorsupport@rgcjonas.gmail.com'
@@ -341,7 +345,7 @@ def get_extensions(chosen_layout):
             "dash-to-panel@jderose9.github.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "appindicatorsupport@rgcjonas.gmail.com",
-            "arc-menu@linxgem33.com"
+            "arcmenu@arcmenu.com"
         ),
         "mate": (
             "dash-to-panel@jderose9.github.com",
@@ -349,7 +353,7 @@ def get_extensions(chosen_layout):
             "window-list@gnome-shell-extensions.gcampax.github.com",
             "places-menu@gnome-shell-extensions.gcampax.github.com",
             "appindicatorsupport@rgcjonas.gmail.com",
-            "arc-menu@linxgem33.com"
+            "arcmenu@arcmenu.com"
         ),
         "modern": (
             "dash-to-dock@micxgx.gmail.com",
@@ -360,7 +364,7 @@ def get_extensions(chosen_layout):
             "dash-to-dock@micxgx.gmail.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "unite@hardpixel.eu", 
-            "arc-menu@linxgem33.com"
+            "arcmenu@arcmenu.com"
         ),
         "material_shell": (
             "material-shell@papyelgringo",
