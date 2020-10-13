@@ -61,7 +61,7 @@ def apply_unity():
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 2;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 2;\
         gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     
 
@@ -236,9 +236,11 @@ def apply_material_shell():
         'arcmenu@arcmenu.com',
         'ding@rastersoft.com',
         'window-list@gnome-shell-extensions.gcampax.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'pop-shell@system76.com'
         )
-
+    if 'pop-shell@system76.com' in enabled:
+        disable_pop()
     subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
@@ -310,6 +312,13 @@ def disable_wayland():
     else:
         return False
 
+def get_wayland_state():
+    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True).returncode == 1
+    if wayland_enabled and not nvidia_present:
+        return True
+    else:
+        return False
+
 def toggle_wayland():
     if get_wayland_state():
         wayland_success = subprocess.run("pkexec sed -i 's/^#WaylandEnable=false/WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
@@ -324,13 +333,55 @@ def toggle_wayland():
         else:
             return False
 
+def enable_pop():
+    subprocess.run('cd $(mktemp -d);\
+    touch .confirm_shortcut_change ;\
+    /usr/share/gnome-shell/extensions/pop-shell@system76.com/scripts/configure.sh;\
+    gnome-extensions enable pop-shell@system76.com', shell=True)
 
-def get_wayland_state():
-    wayland_enabled = subprocess.run("grep -q '^WaylandEnable=false' /etc/gdm/custom.conf", shell=True).returncode == 1
-    if wayland_enabled and not nvidia_present:
+def disable_pop():
+    subprocess.run('KEYS_GNOME_WM=/org/gnome/desktop/wm/keybindings;\
+    KEYS_GNOME_SHELL=/org/gnome/shell/keybindings;\
+    KEYS_MUTTER=/org/gnome/mutter/keybindings;\
+    KEYS_MEDIA=/org/gnome/settings-daemon/plugins/media-keys;\
+    dconf reset ${KEYS_GNOME_WM}/minimize;\
+    dconf reset ${KEYS_GNOME_SHELL}/open-application-menu;\
+    dconf reset ${KEYS_GNOME_SHELL}/toggle-message-tray;\
+    dconf reset ${KEYS_GNOME_WM}/switch-to-workspace-left;\
+    dconf reset ${KEYS_GNOME_WM}/switch-to-workspace-right;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-up;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-down;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-left;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-right;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-up;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-down;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-left;\
+    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-right;\
+    dconf reset ${KEYS_MUTTER}/toggle-tiled-left;\
+    dconf reset ${KEYS_MUTTER}/toggle-tiled-right;\
+    dconf reset ${KEYS_GNOME_WM}/toggle-maximized;\
+    dconf reset ${KEYS_MEDIA}/screensaver;\
+    dconf reset ${KEYS_MEDIA}/home;\
+    dconf reset ${KEYS_MEDIA}/email;\
+    dconf reset ${KEYS_MEDIA}/www;\
+    dconf reset ${KEYS_MEDIA}/rotate-video-lock-static;\
+    dconf reset ${KEYS_GNOME_WM}/close;\
+    gnome-extensions disable pop-shell@system76.com', shell=True)    
+
+def get_pop_state():
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    if 'pop-shell@system76.com' in enabled:
         return True
     else:
         return False
+
+def toggle_pop():
+    if get_pop_state():
+        disable_pop()
+    else:
+        enable_pop()
+            
+
 
 def get_extensions(chosen_layout):
     # List needed extensions
@@ -462,6 +513,8 @@ class LayoutBox(Gtk.Box):
         self.branding_handler_id = None
         self.branding_active = None
         self.wayland_handler_id = None
+        self.wayland_active = None
+        self.pop_id = None
         self.wayland_active = None
 
         with UserConf() as conf:
@@ -623,6 +676,26 @@ class LayoutBox(Gtk.Box):
         dark_label.set_markup("Automatic dark theme")
         dark_label.props.halign = Gtk.Align.START
 
+        # Pop-shell
+        pop_switch = Gtk.Switch()
+        pop_switch.props.valign = Gtk.Align.CENTER
+        pop_switch.props.halign = Gtk.Align.CENTER
+        pop_enabled = subprocess.run(
+            "gnome-extensions info pop-shell@system76.com | grep -q ENABLED", shell=True)
+        if pop_enabled.returncode == 0:
+            pop_switch.set_active(True)
+        else:
+            pop_switch.set_active(False)
+
+        pop_switch.connect("notify::active", self.on_pop_activated)
+        pop_label = Gtk.Label()
+        pop_label.set_markup("Window Tiling (Pop-shell)")
+        pop_label.props.halign = Gtk.Align.START
+
+        material_enabled = subprocess.run("gnome-extensions info material-shell@papyelgringo | grep -q ENABLED", shell=True)
+        if material_enabled.returncode == 0:
+            pop_switch.set_sensitive(False)
+
         # Gnome Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
         theme_button.connect("clicked", self.on_gnometweaks_activated)
@@ -689,6 +762,8 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(tray_label, 4, 3, 2, 1)
         theme_grid.attach(dark_switch, 6, 4, 1, 1)
         theme_grid.attach(dark_label, 4, 4, 2, 1)
+        theme_grid.attach(pop_switch, 6, 5, 1, 1)
+        theme_grid.attach(pop_label, 4, 5, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
@@ -818,6 +893,15 @@ class LayoutBox(Gtk.Box):
             state = "off"
             subprocess.run("gnome-extensions disable nightthemeswitcher@romainvigier.fr", shell=True)
         print("Automatic dark theme was turned", state)
+
+    def on_pop_activated(self, switch, gparam):
+        if switch.get_active():
+            state = "on"
+            enable_pop()
+        else:
+            state = "off"
+            disable_pop()
+        print("Pop-shell was turned", state)
 
     def on_tray_activated(self, switch, gparam):
         if switch.get_active():
