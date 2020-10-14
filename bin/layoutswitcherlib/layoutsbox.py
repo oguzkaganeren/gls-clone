@@ -338,6 +338,9 @@ def enable_pop():
     touch .confirm_shortcut_change ;\
     /usr/share/gnome-shell/extensions/pop-shell@system76.com/scripts/configure.sh;\
     gnome-extensions enable pop-shell@system76.com', shell=True)
+    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
+    if 'material-shell@papyelgringo' in enabled:
+        subprocess.run('gnome-extensions disable material-shell@papyelgringo', shell=True)
 
 def disable_pop():
     subprocess.run('KEYS_GNOME_WM=/org/gnome/desktop/wm/keybindings;\
@@ -691,10 +694,6 @@ class LayoutBox(Gtk.Box):
         pop_label = Gtk.Label()
         pop_label.set_markup("Window Tiling (Pop-shell)")
         pop_label.props.halign = Gtk.Align.START
-
-        material_enabled = subprocess.run("gnome-extensions info material-shell@papyelgringo | grep -q ENABLED", shell=True)
-        if material_enabled.returncode == 0:
-            pop_switch.set_sensitive(False)
 
         # Gnome Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
