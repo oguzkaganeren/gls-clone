@@ -2,7 +2,7 @@ import sys
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, GObject, GLib
 import subprocess
 import shutil
 from pathlib import Path
@@ -37,7 +37,7 @@ def rm_tmp_dir():
 atexit.register(rm_tmp_dir)
 
 def apply_unity():
-    subprocess.run('gnome-extensions disable arcmenu@arcmenu.com', shell=True)
+    GLib.spawn_command_line_sync('gnome-extensions disable arcmenu@arcmenu.com')
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
@@ -67,11 +67,11 @@ def apply_unity():
 
     for ext in conflicting_extensions:
         if ext in enabled:
-            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
     for ext in required_extensions:
         if ext not in enabled:
-            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
     subprocess.run("gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD", shell=True)
 
@@ -91,7 +91,7 @@ def apply_classic():
         'window-list@gnome-shell-extensions.gcampax.github.com'
         )
 
-    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
+    GLib.spawn_command_line_sync('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps true;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 48;\
@@ -101,14 +101,14 @@ def apply_classic():
                 gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Default;\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
                 gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 2;\
-                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
     for ext in conflicting_extensions:
         if ext in enabled:
-            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
     for ext in required_extensions:
         if ext not in enabled:
-            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
 
 def apply_modern():
@@ -133,11 +133,11 @@ def apply_modern():
                 gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
-            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
     for ext in required_extensions:
         if ext not in enabled:
-            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
 
 def apply_manjaro():
@@ -163,11 +163,11 @@ def apply_manjaro():
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
-            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
     for ext in required_extensions:
         if ext not in enabled:
-            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
 
 def apply_gnome():
@@ -184,11 +184,11 @@ def apply_gnome():
         'appindicatorsupport@rgcjonas.gmail.com'
         )
 
-    subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    GLib.spawn_command_line_sync('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
     
     for ext in conflicting_extensions:
         if ext in enabled:
-            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
 
 def apply_mate():
@@ -218,11 +218,11 @@ def apply_mate():
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
-            subprocess.run(f'gnome-extensions disable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
     for ext in required_extensions:
         if ext not in enabled:
-            subprocess.run(f'gnome-extensions enable {ext}', shell=True)
+            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
 
 def apply_material_shell():
@@ -241,12 +241,12 @@ def apply_material_shell():
         )
     if 'pop-shell@system76.com' in enabled:
         disable_pop()
-    subprocess.run('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
+    GLib.spawn_command_line_sync('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
     for ext in conflicting_extensions:
         if ext in enabled:
             subprocess.run(f'gnome-extensions disable {ext}', shell=True)
             print(f"disabled {ext}")
-    subprocess.run(f'gnome-extensions enable material-shell@papyelgringo', shell=True)
+    GLib.spawn_command_line_sync(f'gnome-extensions enable material-shell@papyelgringo')
     print(f"enabled material-shell@papyelgringo")
 
 def get_layouts():
@@ -260,9 +260,9 @@ def get_layouts():
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
     if running_wayland.returncode == 0:
-        subprocess.run("gnome-session-quit --logout", shell=True)
+        GLib.spawn_command_line_sync("gnome-session-quit --logout")
     else:
-        subprocess.run("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'", shell=True)
+        GLib.spawn_command_line_sync("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'")
 
 
 def replace_in_file(file_name: str, regex: str, value: str):
@@ -340,7 +340,7 @@ def enable_pop():
     gnome-extensions enable pop-shell@system76.com', shell=True)
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     if 'material-shell@papyelgringo' in enabled:
-        subprocess.run('gnome-extensions disable material-shell@papyelgringo', shell=True)
+        GLib.spawn_command_line_sync('gnome-extensions disable material-shell@papyelgringo')
 
 def disable_pop():
     subprocess.run('KEYS_GNOME_WM=/org/gnome/desktop/wm/keybindings;\
@@ -383,8 +383,6 @@ def toggle_pop():
         disable_pop()
     else:
         enable_pop()
-            
-
 
 def get_extensions(chosen_layout):
     # List needed extensions
