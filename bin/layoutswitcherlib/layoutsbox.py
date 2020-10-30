@@ -334,42 +334,13 @@ def toggle_wayland():
             return False
 
 def enable_pop():
-    subprocess.run('cd $(mktemp -d);\
-    touch .confirm_shortcut_change ;\
-    /usr/share/gnome-shell/extensions/pop-shell@system76.com/scripts/configure.sh;\
-    gnome-extensions enable pop-shell@system76.com', shell=True)
+    subprocess.run('gnome-extensions enable pop-shell@system76.com', shell=True)
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     if 'material-shell@papyelgringo' in enabled:
         GLib.spawn_command_line_sync('gnome-extensions disable material-shell@papyelgringo')
 
 def disable_pop():
-    subprocess.run('KEYS_GNOME_WM=/org/gnome/desktop/wm/keybindings;\
-    KEYS_GNOME_SHELL=/org/gnome/shell/keybindings;\
-    KEYS_MUTTER=/org/gnome/mutter/keybindings;\
-    KEYS_MEDIA=/org/gnome/settings-daemon/plugins/media-keys;\
-    dconf reset ${KEYS_GNOME_WM}/minimize;\
-    dconf reset ${KEYS_GNOME_SHELL}/open-application-menu;\
-    dconf reset ${KEYS_GNOME_SHELL}/toggle-message-tray;\
-    dconf reset ${KEYS_GNOME_WM}/switch-to-workspace-left;\
-    dconf reset ${KEYS_GNOME_WM}/switch-to-workspace-right;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-up;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-down;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-left;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-monitor-right;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-up;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-down;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-left;\
-    dconf reset ${KEYS_GNOME_WM}/move-to-workspace-right;\
-    dconf reset ${KEYS_MUTTER}/toggle-tiled-left;\
-    dconf reset ${KEYS_MUTTER}/toggle-tiled-right;\
-    dconf reset ${KEYS_GNOME_WM}/toggle-maximized;\
-    dconf reset ${KEYS_MEDIA}/screensaver;\
-    dconf reset ${KEYS_MEDIA}/home;\
-    dconf reset ${KEYS_MEDIA}/email;\
-    dconf reset ${KEYS_MEDIA}/www;\
-    dconf reset ${KEYS_MEDIA}/rotate-video-lock-static;\
-    dconf reset ${KEYS_GNOME_WM}/close;\
-    gnome-extensions disable pop-shell@system76.com', shell=True)    
+    subprocess.run('gnome-extensions disable pop-shell@system76.com', shell=True)    
 
 def get_pop_state():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
