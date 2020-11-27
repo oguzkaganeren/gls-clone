@@ -52,9 +52,6 @@ def apply_unity():
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'appindicatorsupport@rgcjonas.gmail.com'
         )
-
-    subprocess.run('dconf load /org/gnome/shell/extensions/ < /usr/share/gls/schemas/unity_layout; \
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout UbuntuDash; \
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
         gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
