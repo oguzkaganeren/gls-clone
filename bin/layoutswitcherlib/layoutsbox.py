@@ -53,7 +53,8 @@ def apply_unity():
         'appindicatorsupport@rgcjonas.gmail.com'
         )
 
-    subprocess.run('dconf load < /usr/share/gls/schemas/unity_layout;;\
+    subprocess.run('dconf load < /usr/share/gls/schemas/unity_layout; \
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout UbuntuDash; \
         gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     
 
@@ -84,6 +85,7 @@ def apply_classic():
         )
 
     GLib.spawn_command_line_sync('dconf load < /usr/share/gls/schemas/classc_layout; \
+                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Default; \
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
     for ext in conflicting_extensions:
         if ext in enabled:
