@@ -65,8 +65,6 @@ def apply_unity():
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 2;\
         gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
-    
-
     for ext in conflicting_extensions:
         if ext in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
