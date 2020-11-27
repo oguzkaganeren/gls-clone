@@ -37,6 +37,10 @@ setup(
             'data/pictures/unitypreview.svg',
             'data/pictures/classicpreview.svg',
          ]),
+        ('share/gls/schemas',[
+            'data/schemas/classic_layout',
+            'data/schemas/unity_layout',
+         ]),
         ('share/gtk-3.0',[
             'data/css/gtk.css',
          ]),
