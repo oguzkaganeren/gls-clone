@@ -2,7 +2,7 @@ import sys
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GObject, GLib
+from gi.repository import Gtk, Gdk, GObject, GLib, Gio
 import subprocess
 import shutil
 from pathlib import Path
@@ -36,6 +36,20 @@ def rm_tmp_dir():
 
 atexit.register(rm_tmp_dir)
 
+def horizontal_layout():
+    setting = Gio.Settings.new('org.gnome.desktop.wm.keybindings')
+    setting.set_strv('switch-to-workspace-left', ['<Super><Alt>Left', '<Control><Alt>Left', '<Super>a'])
+    setting.set_strv('switch-to-workspace-right', ['<Super><Alt>Right', '<Control><Alt>Right', '<Super>d'])
+    setting.set_strv('move-to-workspace-right', ['<Super><Alt><Shift>Right', '<Control><Alt><Shift>Right', '<Super><Shift>d'])
+    setting.set_strv('move-to-workspace-left', ['<Super><Alt><Shift>Left', '<Control><Alt><Shift>Left', '<Super><Shift>a'])
+
+def vertical_layout():
+    setting = Gio.Settings.new('org.gnome.desktop.wm.keybindings')
+    setting.set_strv('switch-to-workspace-down', ['<Super><Alt>Down', '<Control><Alt>Down', '<Super>s'])
+    setting.set_strv('switch-to-workspace-up', ['<Super><Alt>Up', '<Control><Alt>Up', '<Super>w'])
+    setting.set_strv('move-to-workspace-down', ['<Super><Alt><Shift>Down', '<Control><Alt><Shift>Down', '<Super><Shift>s'])
+    setting.set_strv('move-to-workspace-up', ['<Super><Alt><Shift>Up', '<Control><Alt><Shift>Up', '<Super><Shift>w'])
+
 def apply_unity():
     GLib.spawn_command_line_sync('gnome-extensions disable arcmenu@arcmenu.com')
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
@@ -43,6 +57,7 @@ def apply_unity():
         'dash-to-dock@micxgx.gmail.com',
         'unite@hardpixel.eu',
         'arcmenu@arcmenu.com',
+        'vertical-overview@RensAlthuis.github.com',
         'ding@rastersoft.com'
         )
     conflicting_extensions = (
@@ -56,6 +71,7 @@ def apply_unity():
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
         gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true;\
+        gsettings set org.gnome.shell.extensions.vertical-overview override-dash false;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout UbuntuDash;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DASH;\
@@ -70,6 +86,7 @@ def apply_unity():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    vertical_layout()
     subprocess.run("gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD", shell=True)
 
 def apply_classic():
@@ -85,6 +102,7 @@ def apply_classic():
         'unite@hardpixel.eu',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
+        'vertical-overview@RensAlthuis.github.com',
         'window-list@gnome-shell-extensions.gcampax.github.com'
         )
 
@@ -107,6 +125,7 @@ def apply_classic():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    horizontal_layout()
 
 def apply_modern():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
@@ -121,6 +140,7 @@ def apply_modern():
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
+        'vertical-overview@RensAlthuis.github.com',
         'appindicatorsupport@rgcjonas.gmail.com'
         )
 
@@ -136,11 +156,13 @@ def apply_modern():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    horizontal_layout()
 
 def apply_manjaro():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
+        'vertical-overview@RensAlthuis.github.com',
         'appindicatorsupport@rgcjonas.gmail.com'
         )
     conflicting_extensions = (
@@ -166,6 +188,7 @@ def apply_manjaro():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    vertical_layout()
 
 def apply_gnome():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
@@ -178,7 +201,8 @@ def apply_gnome():
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'vertical-overview@RensAlthuis.github.com'
         )
 
     GLib.spawn_command_line_sync('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
@@ -187,6 +211,7 @@ def apply_gnome():
         if ext in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
+    horizontal_layout()
 
 def apply_mate():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
@@ -199,6 +224,7 @@ def apply_mate():
         )
     conflicting_extensions = (
         'dash-to-dock@micxgx.gmail.com',
+        'vertical-overview@RensAlthuis.github.com',
         'unite@hardpixel.eu',
         'material-shell@papyelgringo',
         'appindicatorsupport@rgcjonas.gmail.com'
@@ -221,10 +247,12 @@ def apply_mate():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    horizontal_layout()
 
 def apply_material_shell():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = ('material-shell@papyelgringo')
+    required_extensions = ('material-shell@papyelgringo',
+        'vertical-overview@RensAlthuis.github.com')
     conflicting_extensions = (
         'dash-to-panel@jderose9.github.com',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
@@ -245,6 +273,7 @@ def apply_material_shell():
             print(f"disabled {ext}")
     GLib.spawn_command_line_sync(f'gnome-extensions enable material-shell@papyelgringo')
     print(f"enabled material-shell@papyelgringo")
+    vertical_layout()
 
 def get_layouts():
     return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
