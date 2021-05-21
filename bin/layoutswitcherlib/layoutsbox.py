@@ -131,8 +131,8 @@ def apply_modern():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
-        'unite@hardpixel.eu',
-        'ding@rastersoft.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'gnome-ui-tune@itstime.tech'
         )
     conflicting_extensions = (
         'arcmenu@arcmenu.com',
@@ -146,8 +146,7 @@ def apply_modern():
 
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM;\
                 gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false;\
-                gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false;\
-                gsettings set org.gnome.desktop.wm.preferences button-layout "close,minimize,maximize:"', shell=True)
+                gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
@@ -276,9 +275,9 @@ def apply_material_shell():
     vertical_layout()
 
 def get_layouts():
-    return ({"id": "manjaro", "label": "Manjaro", "x": 1, "y": 0},
+    return ({"id": "manjaro", "label": "Manjaro Legacy", "x": 1, "y": 0},
             {"id": "classic", "label": "Traditional", "x": 2, "y": 0},
-            {"id": "modern", "label": " Modern", "x": 1, "y": 3},
+            {"id": "modern", "label": " Manjaro", "x": 1, "y": 3},
             {"id": "unity", "label": " Unity", "x": 3, "y": 0},
             {"id": "material_shell", "label": " Tiling", "x": 3, "y": 3},
             {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
@@ -407,7 +406,7 @@ def get_extensions(chosen_layout):
         "modern": (
             "dash-to-dock@micxgx.gmail.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
-            "unite@hardpixel.eu"
+            "gnome-ui-tune@itstime.tech"
         ),
         "unity": (
             "dash-to-dock@micxgx.gmail.com",
@@ -438,7 +437,7 @@ def get_extensions(chosen_layout):
                     "gnome-shell-extension-arc-menu"],
         "modern": ["gnome-shell-extension-dash-to-dock",
                    "gnome-shell-extensions",
-                   "gnome-shell-extension-unite"],
+                   "gnome-shell-extension-gnome-ui-tune"],
         "unity": ["gnome-shell-extension-dash-to-dock",
                    "gnome-shell-extensions",
                    "gnome-shell-extension-unite",
