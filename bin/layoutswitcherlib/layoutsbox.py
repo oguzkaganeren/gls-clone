@@ -699,13 +699,13 @@ class LayoutBox(Gtk.Box):
         theme_label.props.halign = Gtk.Align.START
 
         # Gesture settings
-        gesture_button = Gtk.Button.new_with_label("Open")
-        gesture_button.connect("clicked", self.on_gest_activated)
-        gesture_button.props.valign = Gtk.Align.CENTER
-        gesture_button.props.halign = Gtk.Align.CENTER
-        gesture_label = Gtk.Label()
-        gesture_label.set_markup("Gesture settings")
-        gesture_label.props.halign = Gtk.Align.START
+        # gesture_button = Gtk.Button.new_with_label("Open")
+        # gesture_button.connect("clicked", self.on_gest_activated)
+        # gesture_button.props.valign = Gtk.Align.CENTER
+        # gesture_button.props.halign = Gtk.Align.CENTER
+        # gesture_label = Gtk.Label()
+        # gesture_label.set_markup("Gesture settings")
+        # gesture_label.props.halign = Gtk.Align.START
 
         # Gnome Extensions
         ext_button = Gtk.Button.new_with_label("Open")
@@ -743,8 +743,8 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(goa_label, 1, 2, 2, 1)
         theme_grid.attach(ext_button, 3, 3, 1, 1)
         theme_grid.attach(ext_label, 1, 3, 2, 1)
-        theme_grid.attach(gesture_button, 3, 4, 1, 1)
-        theme_grid.attach(gesture_label, 1, 4, 2, 1)
+        #theme_grid.attach(gesture_button, 3, 4, 1, 1)
+        #theme_grid.attach(gesture_label, 1, 4, 2, 1)
         theme_grid.attach(manjaro_switch, 6, 0, 1, 1)
         theme_grid.attach(manjaro_label, 4, 0, 2, 1)
         theme_grid.attach(wayland_switch, 6, 1, 1, 1)
@@ -957,8 +957,8 @@ class LayoutBox(Gtk.Box):
     def on_gnomext_activated(self, button):
         subprocess.Popen("gnome-shell-extension-prefs")
 
-    def on_gest_activated(self, button):
-        subprocess.Popen("gestures")
+    #def on_gest_activated(self, button):
+    #    subprocess.Popen("gestures")
 
     def on_goa_activated(self, button):
         subprocess.Popen("gnome-control-center online-accounts", shell=True)
