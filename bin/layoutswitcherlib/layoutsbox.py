@@ -11,6 +11,7 @@ import os
 import tempfile
 import atexit
 from .config import UserConf
+from glob import glob
 
 # Define the path to css file
 css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
@@ -380,6 +381,26 @@ def toggle_pop():
     else:
         enable_pop()
 
+
+def enable_firefox_theme():
+    subprocess.run('firegnome-enable.sh', shell=True)
+
+def disable_firefox_theme():
+    subprocess.run('rm -rf ~/.mozilla/firefox/*.default-release/chrome/', shell=True)    
+
+def get_firefox_theme_state():
+    firefox_theme_state = False
+    for x in glob(".mozilla/firefox/**", recursive=True):
+      if 'firefox-gnome-theme' in x:
+        firefox_theme_state = True
+    return firefox_theme_state
+
+def toggle_firefox_theme():
+    if get_firefox_theme_state():
+        disable_firefox_theme()
+    else:
+        enable_firefox_theme()
+
 def get_extensions(chosen_layout):
     # List needed extensions
     extensions = {
@@ -689,6 +710,20 @@ class LayoutBox(Gtk.Box):
         pop_label.set_markup("Window Tiling (Pop-shell)")
         pop_label.props.halign = Gtk.Align.START
 
+
+        # Firefox theme
+        ff_switch = Gtk.Switch()
+        ff_switch.props.valign = Gtk.Align.CENTER
+        ff_switch.props.halign = Gtk.Align.CENTER
+        if get_firefox_theme_state():
+            ff_switch.set_active(True)
+        else:
+            ff_switch.set_active(False)
+        ff_switch.connect("notify::active", self.on_ff_activated)
+        ff_label = Gtk.Label()
+        ff_label.set_markup("Gnome native firefox theme")
+        ff_label.props.halign = Gtk.Align.START
+
         # Gnome Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
         theme_button.connect("clicked", self.on_gnometweaks_activated)
@@ -743,8 +778,6 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(goa_label, 1, 2, 2, 1)
         theme_grid.attach(ext_button, 3, 3, 1, 1)
         theme_grid.attach(ext_label, 1, 3, 2, 1)
-        #theme_grid.attach(gesture_button, 3, 4, 1, 1)
-        #theme_grid.attach(gesture_label, 1, 4, 2, 1)
         theme_grid.attach(manjaro_switch, 6, 0, 1, 1)
         theme_grid.attach(manjaro_label, 4, 0, 2, 1)
         theme_grid.attach(wayland_switch, 6, 1, 1, 1)
@@ -757,6 +790,8 @@ class LayoutBox(Gtk.Box):
         theme_grid.attach(dark_label, 4, 4, 2, 1)
         theme_grid.attach(pop_switch, 6, 5, 1, 1)
         theme_grid.attach(pop_label, 4, 5, 2, 1)
+        theme_grid.attach(ff_switch, 6, 6, 1, 1)
+        theme_grid.attach(ff_label, 4, 6, 2, 1)
 
     def set_preview_colors(self, newcolor: str):
         """ load preview images """
@@ -895,6 +930,15 @@ class LayoutBox(Gtk.Box):
             state = "off"
             disable_pop()
         print("Pop-shell was turned", state)
+
+    def on_ff_activated(self, switch, gparam):
+        if switch.get_active():
+            state = "on"
+            enable_firefox_theme()
+        else:
+            state = "off"
+            disable_firefox_theme()
+        print("firefox them was turned", state)
 
     def on_tray_activated(self, switch, gparam):
         if switch.get_active():
