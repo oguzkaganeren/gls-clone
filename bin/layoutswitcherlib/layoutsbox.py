@@ -72,7 +72,7 @@ def apply_unity():
         gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true;\
         gsettings set org.gnome.shell.extensions.vertical-overview override-dash false;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout UbuntuDash;\
+        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Unity;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DASH;\
         gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
