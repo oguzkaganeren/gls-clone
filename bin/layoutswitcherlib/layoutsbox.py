@@ -66,7 +66,8 @@ def apply_unity():
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'no-overview@fthx'
         )
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
@@ -96,7 +97,8 @@ def apply_classic():
         'dash-to-panel@jderose9.github.com',
         'arcmenu@arcmenu.com',
         'appindicatorsupport@rgcjonas.gmail.com',
-        'ding@rastersoft.com'
+        'ding@rastersoft.com',
+        'no-overview@fthx'
         )
     conflicting_extensions = (
         'dash-to-dock@micxgx.gmail.com',
@@ -142,7 +144,8 @@ def apply_modern():
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'vertical-overview@RensAlthuis.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'no-overview@fthx'
         )
 
     subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position BOTTOM;\
@@ -163,7 +166,8 @@ def apply_manjaro():
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
         'vertical-overview@RensAlthuis.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'no-overview@fthx'
         )
     conflicting_extensions = (
         'dash-to-panel@jderose9.github.com',
@@ -202,7 +206,8 @@ def apply_gnome():
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'appindicatorsupport@rgcjonas.gmail.com',
-        'vertical-overview@RensAlthuis.github.com'
+        'vertical-overview@RensAlthuis.github.com',
+        'no-overview@fthx'
         )
 
     GLib.spawn_command_line_sync('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
@@ -227,7 +232,8 @@ def apply_mate():
         'vertical-overview@RensAlthuis.github.com',
         'unite@hardpixel.eu',
         'material-shell@papyelgringo',
-        'appindicatorsupport@rgcjonas.gmail.com'
+        'appindicatorsupport@rgcjonas.gmail.com',
+        'no-overview@fthx'
         )
 
     subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
@@ -262,7 +268,8 @@ def apply_material_shell():
         'ding@rastersoft.com',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'appindicatorsupport@rgcjonas.gmail.com',
-        'pop-shell@system76.com'
+        'pop-shell@system76.com',
+        'no-overview@fthx'
         )
     if 'pop-shell@system76.com' in enabled:
         disable_pop()
@@ -409,12 +416,15 @@ def get_extensions(chosen_layout):
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "drive-menu@gnome-shell-extensions.gcampax.github.com",
             "appindicatorsupport@rgcjonas.gmail.com",
+            "no-overview@fthx",
+            "vertical-overview@RensAlthuis.github.com"
         ),
         "classic": (
             "dash-to-panel@jderose9.github.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "appindicatorsupport@rgcjonas.gmail.com",
-            "arcmenu@arcmenu.com"
+            "arcmenu@arcmenu.com",
+            "no-overview@fthx"
         ),
         "mate": (
             "dash-to-panel@jderose9.github.com",
@@ -433,11 +443,13 @@ def get_extensions(chosen_layout):
             "dash-to-dock@micxgx.gmail.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "unite@hardpixel.eu", 
-            "arcmenu@arcmenu.com"
+            "arcmenu@arcmenu.com",
+            "vertical-overview@RensAlthuis.github.com"
         ),
         "material_shell": (
             "material-shell@papyelgringo",
-            "user-theme@gnome-shell-extensions.gcampax.github.com"
+            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "vertical-overview@RensAlthuis.github.com"
         ),
         "gnome": (
             "user-theme@gnome-shell-extensions.gcampax.github.com",
@@ -447,11 +459,14 @@ def get_extensions(chosen_layout):
     ext_pkgs = {
         "manjaro": ["gnome-shell-extension-dash-to-dock",
                     "gnome-shell-extensions",
-                    "gnome-shell-extension-appindicator",],
+                    "gnome-shell-extension-appindicator",
+                    "gnome-shell-extension-vertical-overview",
+                    "gnome-shell-extension-no-overview"],
         "classic": ["gnome-shell-extension-dash-to-panel",
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",
-                    "gnome-shell-extension-arc-menu"],
+                    "gnome-shell-extension-arc-menu",
+                    "gnome-shell-extension-no-overview"],
         "mate": ["gnome-shell-extension-dash-to-panel",
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",
