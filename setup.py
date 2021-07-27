@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
- 
-from setuptools import setup, find_packages
-from bin import __version__
 
-'''
+"""
+
 https://setuptools.readthedocs.io/en/latest/setuptools.html#new-and-changed-setup-keywords
 build:
 python setup.py bdist
-'''
+
+"""
+
+from setuptools import setup, find_packages
+
 setup(
     name='layoutswitcherlib',
-    version=__version__,
+    version='0.8.20',
     description='Gnome Layout Switcher',
     url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
     download_url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
     keywords = ["gnome", "manjaro"],
     author="Chrysostomus, papajoke, Ste74",
-    
     python_requires='>=3.7',
     packages=['layoutswitcherlib'],
-
     package_dir = {'layoutswitcherlib' : 'bin/layoutswitcherlib'},
     include_package_data=True,
-    
 
     data_files=[
         ('share/icons/hicolor/scalable/apps',[
@@ -56,6 +55,4 @@ setup(
         #    'data/org.manjaro.org.gnomelayoutswitcher.policy',
         # ]),
      ]
-    
-    #install_requires = ['pygtk'],
 )
