@@ -109,16 +109,16 @@ def apply_classic():
         'window-list@gnome-shell-extensions.gcampax.github.com'
         )
 
-    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps true;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 48;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu custom-menu-button-icon-size 32.0;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-appearance Icon;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Default;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 3;\
+    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
+                gsettings set org.gnome.shell.extensions.dash-to-panel panel-position BOTTOM;\
+                gsettings set org.gnome.shell.extensions.dash-to-panel show-running-apps true;\
+                gsettings set org.gnome.shell.extensions.dash-to-panel panel-size 48;\
+                gsettings set org.gnome.shell.extensions.arcmenu custom-menu-button-icon-size 32.0;\
+                gsettings set org.gnome.shell.extensions.arcmenu menu-button-appearance Icon;\
+                gsettings set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
+                gsettings set org.gnome.shell.extensions.arcmenu menu-layout Default;\
+                gsettings set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
+                gsettings set org.gnome.shell.extensions.arcmenu distro-icon 3;\
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
@@ -393,7 +393,8 @@ def enable_firefox_theme():
     subprocess.run('firegnome-enable.sh', shell=True)
 
 def disable_firefox_theme():
-    subprocess.run('rm -rf ~/.mozilla/firefox/*.default-release/chrome/', shell=True)    
+    subprocess.run('rm -rf ~/.mozilla/firefox/*.default-release/chrome/', shell=True)
+    subprocess.run('rm -rf ~/.config/autostart/firefox-theme.desktop', shell=True)    
 
 def get_firefox_theme_state():
     firefox_theme_state = False
