@@ -74,11 +74,11 @@ def apply_unity():
         gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
         gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true;\
         gsettings set org.gnome.shell.extensions.vertical-overview override-dash false;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Unity;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DASH;\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
-        gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu distro-icon 3;\
+        gsettings set org.gnome.shell.extensions.arcmenu menu-layout Unity;\
+        gsettings set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
+        gsettings set org.gnome.shell.extensions.arcmenu arc-menu-placement DASH;\
+        gsettings set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
+        gsettings set org.gnome.shell.extensions.arcmenu distro-icon 3;\
         gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
@@ -89,7 +89,7 @@ def apply_unity():
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
     vertical_layout()
-    subprocess.run("gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD", shell=True)
+    subprocess.run("gsettings  set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD", shell=True)
 
 def apply_classic():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
@@ -236,14 +236,14 @@ def apply_mate():
         'no-overview@fthx'
         )
 
-    subprocess.run('gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-position TOP;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/dash-to-panel@jderose9.github.com/schemas set org.gnome.shell.extensions.dash-to-panel panel-size 32;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-button-appearance Text;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu custom-menu-button-text " Applications";\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
-                gsettings --schemadir /usr/share/gnome-shell/extensions/arcmenu@arcmenu.com/schemas set org.gnome.shell.extensions.arcmenu menu-layout Simple;\
+    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
+                gsettings set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
+                gsettings set org.gnome.shell.extensions.dash-to-panel panel-position TOP;\
+                gsettings set org.gnome.shell.extensions.dash-to-panel panel-size 32;\
+                gsettings set org.gnome.shell.extensions.arcmenu menu-button-appearance Text;\
+                gsettings set org.gnome.shell.extensions.arcmenu custom-menu-button-text " Applications";\
+                gsettings set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
+                gsettings set org.gnome.shell.extensions.arcmenu menu-layout Simple;\
                 gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
     for ext in conflicting_extensions:
         if ext in enabled:
