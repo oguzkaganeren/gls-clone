@@ -581,7 +581,11 @@ class LayoutBox(Gtk.Box):
         dirty_hack = self.layout
         self.layout = "modern"
         self.previews[self.layout].get_parent().btn.set_active(True)
-        self.previews[dirty_hack].get_parent().btn.set_active(True)
+        try:
+            self.previews[dirty_hack].get_parent().btn.set_active(True)
+        except KeyError:
+            print(f'Chosen layout {dirty_hack} is not recognized, using the default instead')
+
 
     def create_page_layout(self, stack):
         """ Layout menu """
