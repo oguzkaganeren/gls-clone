@@ -283,12 +283,10 @@ def apply_material_shell():
     vertical_layout()
 
 def get_layouts():
-    return ({"id": "manjaro", "label": "Manjaro Legacy", "x": 1, "y": 0},
-            {"id": "classic", "label": "Traditional", "x": 2, "y": 0},
-            {"id": "modern", "label": " Manjaro", "x": 1, "y": 3},
-            {"id": "unity", "label": " Unity", "x": 3, "y": 0},
-            {"id": "material_shell", "label": " Tiling", "x": 3, "y": 3},
-            {"id": "gnome", "label": "Gnome", "x": 2, "y": 3},)
+    return ({"id": "classic", "label": "Traditional", "x": 3, "y": 0},
+            {"id": "modern", "label": " Manjaro", "x": 2, "y": 0},
+            {"id": "material_shell", "label": " Tiling", "x": 2, "y": 3},
+            {"id": "gnome", "label": "Gnome", "x": 3, "y": 3},)
 
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
@@ -552,7 +550,7 @@ class LayoutBox(Gtk.Box):
         self.wayland_active = None
 
         with UserConf() as conf:
-            self.layout = conf.read("layout", "manjaro")
+            self.layout = conf.read("layout", "modern")
             print("current layout:", self.layout)
 
         self.previews = {}
@@ -581,7 +579,7 @@ class LayoutBox(Gtk.Box):
         self.current_color = ""  # set colors from .css
         self.show_all()
         dirty_hack = self.layout
-        self.layout = "manjaro"
+        self.layout = "modern"
         self.previews[self.layout].get_parent().btn.set_active(True)
         self.previews[dirty_hack].get_parent().btn.set_active(True)
 
