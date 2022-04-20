@@ -2,7 +2,7 @@
 Name=Layouts
 Comment=GNOME 3 layout options
 # Translators: Do NOT translate or transliterate this text (this is an icon file name)!
-Icon=/usr/share/icons/hicolor/scalable/apps/gnome-layout-switcher.svg
+Icon=gnome-layout-switcher
 Exec=gnome-layout-switcher
 Terminal=false
 Type=Application
