@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='layoutswitcherlib',
-    version='0.8.26',
+    version='0.8.27',
     description='Gnome Layout Switcher',
     url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
     download_url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
