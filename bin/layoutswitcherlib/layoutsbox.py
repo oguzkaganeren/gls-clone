@@ -551,7 +551,7 @@ class LayoutBox(Gtk.Box):
         goa_button.props.valign = Gtk.Align.CENTER
         goa_button.props.halign = Gtk.Align.CENTER
         goa_label = Gtk.Label()
-        goa_label.set_markup("GNOME Online Accounts")
+        goa_label.set_markup("Appearance")
         goa_label.props.halign = Gtk.Align.START
 
         # Theme tab layout
@@ -769,7 +769,7 @@ class LayoutBox(Gtk.Box):
         subprocess.Popen("gnome-shell-extension-prefs")
 
     def on_goa_activated(self, button):
-        subprocess.Popen("gnome-control-center online-accounts", shell=True)
+        subprocess.Popen("gradience", shell=True)
 
     def on_dynapaper_activated(self, button):
         subprocess.Popen("dynamic-wallpaper-editor", shell=True)
