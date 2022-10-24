@@ -233,7 +233,7 @@ def toggle_wayland():
             return False
 
 def enable_firefox_theme():
-    subprocess.run('firegnome-enable.sh', shell=True)
+    subprocess.run('curl -s -o- https://raw.githubusercontent.com/rafaelmardojai/firefox-gnome-theme/master/scripts/install-by-curl.sh | bash', shell=True)
 
 def disable_firefox_theme():
     subprocess.run('rm -rf ~/.mozilla/firefox/*.default-release/chrome/', shell=True)
