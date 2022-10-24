@@ -1,7 +1,6 @@
 [arcmenu]
-arc-menu-placement='DTP'
 custom-menu-button-icon-size=34.0
-distro-icon=2
+distro-icon=3
 dtp-dtd-state=[true, false]
 menu-button-icon='Distro_Icon'
 menu-layout='Default'
