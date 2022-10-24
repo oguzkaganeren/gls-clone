@@ -154,7 +154,7 @@ def get_layouts():
     return ({"id": "traditional", "label": "Traditional", "x": 3, "y": 0},
             {"id": "manjaro", "label": " Manjaro", "x": 2, "y": 0},
             {"id": "material_shell", "label": " Material Shell", "x": 2, "y": 3},
-            {"id": "gnome", "label": "Gnome", "x": 3, "y": 3},)
+            {"id": "gnome", "label": "GNOME", "x": 3, "y": 3},)
 
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
