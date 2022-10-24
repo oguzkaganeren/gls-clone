@@ -344,7 +344,7 @@ class LayoutBox(Gtk.Box):
         super().__init__(orientation=orientation, spacing=spacing, expand=True)
         self.set_margin_top(16)
         """ initialize main box """
-        self.layout = "traditional"
+        self.layout = "manjaro"
         self.window = window
         self.usehello = usehello  # if we want some diff in hello or standalone app...
 
