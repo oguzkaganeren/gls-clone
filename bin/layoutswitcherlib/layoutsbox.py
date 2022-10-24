@@ -545,22 +545,22 @@ class LayoutBox(Gtk.Box):
         dynapaper_label.set_markup("Dynamic Wallpaper Editor")
         dynapaper_label.props.halign = Gtk.Align.START
 
-        # GNOME Online Accounts
-        goa_button = Gtk.Button.new_with_label("Open")
-        goa_button.connect("clicked", self.on_goa_activated)
-        goa_button.props.valign = Gtk.Align.CENTER
-        goa_button.props.halign = Gtk.Align.CENTER
-        goa_label = Gtk.Label()
-        goa_label.set_markup("Appearance")
-        goa_label.props.halign = Gtk.Align.START
+        # Gradience
+        gradience_button = Gtk.Button.new_with_label("Open")
+        gradience_button.connect("clicked", self.on_gradience_activated)
+        gradience_button.props.valign = Gtk.Align.CENTER
+        gradience_button.props.halign = Gtk.Align.CENTER
+        gradience_label = Gtk.Label()
+        gradience_label.set_markup("Appearance")
+        gradience_label.props.halign = Gtk.Align.START
 
         # Theme tab layout
         theme_grid.attach(dynapaper_button, 3, 0, 1, 1)
         theme_grid.attach(dynapaper_label, 1, 0, 2, 1)
         theme_grid.attach(theme_button, 3, 1, 1, 1)
         theme_grid.attach(theme_label, 1, 1, 2, 1)
-        theme_grid.attach(goa_button, 3, 2, 1, 1)
-        theme_grid.attach(goa_label, 1, 2, 2, 1)
+        theme_grid.attach(gradience_button, 3, 2, 1, 1)
+        theme_grid.attach(gradience_label, 1, 2, 2, 1)
         theme_grid.attach(ext_button, 3, 3, 1, 1)
         theme_grid.attach(ext_label, 1, 3, 2, 1)
         #theme_grid.attach(manjaro_switch, 6, 0, 1, 1)
@@ -768,7 +768,7 @@ class LayoutBox(Gtk.Box):
     def on_gnomext_activated(self, button):
         subprocess.Popen("gnome-shell-extension-prefs")
 
-    def on_goa_activated(self, button):
+    def on_gradience_activated(self, button):
         subprocess.Popen("gradience", shell=True)
 
     def on_dynapaper_activated(self, button):
