@@ -20,7 +20,7 @@ css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
 temp_dir = tempfile.mkdtemp()
 
 # Define asset in use
-asset = ["manjaro-gnome-assets", "manjaro-gdm-branding", "manjaro-gdm-theme"]
+asset = ["manjaro-gdm-branding"]
 
 nvidia_present = subprocess.run('lspci -v | grep -q "Kernel driver in use: nvidia"', shell=True).returncode == 0
 
@@ -37,61 +37,7 @@ def rm_tmp_dir():
 
 atexit.register(rm_tmp_dir)
 
-def horizontal_layout():
-    setting = Gio.Settings.new('org.gnome.desktop.wm.keybindings')
-    setting.set_strv('switch-to-workspace-left', ['<Super><Alt>Left', '<Control><Alt>Left', '<Super>a'])
-    setting.set_strv('switch-to-workspace-right', ['<Super><Alt>Right', '<Control><Alt>Right', '<Super>d'])
-    setting.set_strv('move-to-workspace-right', ['<Super><Alt><Shift>Right', '<Control><Alt><Shift>Right', '<Super><Shift>d'])
-    setting.set_strv('move-to-workspace-left', ['<Super><Alt><Shift>Left', '<Control><Alt><Shift>Left', '<Super><Shift>a'])
-
-def vertical_layout():
-    setting = Gio.Settings.new('org.gnome.desktop.wm.keybindings')
-    setting.set_strv('switch-to-workspace-down', ['<Super><Alt>Down', '<Control><Alt>Down', '<Super>s'])
-    setting.set_strv('switch-to-workspace-up', ['<Super><Alt>Up', '<Control><Alt>Up', '<Super>w'])
-    setting.set_strv('move-to-workspace-down', ['<Super><Alt><Shift>Down', '<Control><Alt><Shift>Down', '<Super><Shift>s'])
-    setting.set_strv('move-to-workspace-up', ['<Super><Alt><Shift>Up', '<Control><Alt><Shift>Up', '<Super><Shift>w'])
-
-def apply_unity():
-    GLib.spawn_command_line_sync('gnome-extensions disable arcmenu@arcmenu.com')
-    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = (
-        'dash-to-dock@micxgx.gmail.com',
-        'unite@hardpixel.eu',
-        'arcmenu@arcmenu.com',
-        'vertical-overview@RensAlthuis.github.com',
-        'ding@rastersoft.com'
-        )
-    conflicting_extensions = (
-        'dash-to-panel@jderose9.github.com',
-        'places-menu@gnome-shell-extensions.gcampax.github.com',
-        'material-shell@papyelgringo',
-        'window-list@gnome-shell-extensions.gcampax.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com',
-        'no-overview@fthx'
-        )
-    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock show-apps-at-top true;\
-        gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
-        gsettings set org.gnome.shell.extensions.dash-to-dock extend-height true;\
-        gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed true;\
-        gsettings set org.gnome.shell.extensions.vertical-overview override-dash false;\
-        gsettings set org.gnome.shell.extensions.arcmenu menu-layout Unity;\
-        gsettings set org.gnome.shell.extensions.arcmenu remove-menu-arrow true;\
-        gsettings set org.gnome.shell.extensions.arcmenu arc-menu-placement DASH;\
-        gsettings set org.gnome.shell.extensions.arcmenu menu-button-icon "Distro_Icon";\
-        gsettings set org.gnome.shell.extensions.arcmenu distro-icon 3;\
-        gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
-    for ext in conflicting_extensions:
-        if ext in enabled:
-            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
-            print(f"disabled {ext}")
-    for ext in required_extensions:
-        if ext not in enabled:
-            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
-            print(f"enabled {ext}")
-    vertical_layout()
-    subprocess.run("gsettings  set org.gnome.shell.extensions.arcmenu arc-menu-placement DTD", shell=True)
-
-def apply_classic():
+def apply_traditional():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-panel@jderose9.github.com',
@@ -128,9 +74,8 @@ def apply_classic():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
-    horizontal_layout()
 
-def apply_modern():
+def apply_manjaro():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
         'dash-to-dock@micxgx.gmail.com',
@@ -143,7 +88,6 @@ def apply_modern():
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
-        'vertical-overview@RensAlthuis.github.com',
         'appindicatorsupport@rgcjonas.gmail.com',
         'no-overview@fthx'
         )
@@ -159,46 +103,11 @@ def apply_modern():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
-    horizontal_layout()
-
-def apply_manjaro():
-    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = (
-        'dash-to-dock@micxgx.gmail.com',
-        'vertical-overview@RensAlthuis.github.com',
-        'appindicatorsupport@rgcjonas.gmail.com',
-        'no-overview@fthx'
-        )
-    conflicting_extensions = (
-        'dash-to-panel@jderose9.github.com',
-        'unite@hardpixel.eu',
-        'arcmenu@arcmenu.com',
-        'places-menu@gnome-shell-extensions.gcampax.github.com',
-        'material-shell@papyelgringo',
-        'window-list@gnome-shell-extensions.gcampax.github.com',
-        'ding@rastersoft.com'
-        )
-
-    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-dock dock-position LEFT;\
-                gsettings set org.gnome.shell.extensions.dash-to-dock extend-height false;\
-                gsettings set org.gnome.shell.extensions.dash-to-dock dock-fixed false;\
-                gsettings set org.gnome.shell.extensions.dash-to-dock intellihide true;\
-                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
-    for ext in conflicting_extensions:
-        if ext in enabled:
-            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
-            print(f"disabled {ext}")
-    for ext in required_extensions:
-        if ext not in enabled:
-            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
-            print(f"enabled {ext}")
-    vertical_layout()
 
 def apply_gnome():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     conflicting_extensions = (
         'dash-to-dock@micxgx.gmail.com',
-        'unite@hardpixel.eu',
         'arcmenu@arcmenu.com',
         'ding@rastersoft.com',
         'dash-to-panel@jderose9.github.com',
@@ -206,7 +115,6 @@ def apply_gnome():
         'material-shell@papyelgringo',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'appindicatorsupport@rgcjonas.gmail.com',
-        'vertical-overview@RensAlthuis.github.com',
         'no-overview@fthx'
         )
 
@@ -216,44 +124,6 @@ def apply_gnome():
         if ext in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
-    horizontal_layout()
-
-def apply_mate():
-    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    required_extensions = (
-        'places-menu@gnome-shell-extensions.gcampax.github.com',
-        'dash-to-panel@jderose9.github.com',
-        'arcmenu@arcmenu.com',
-        'window-list@gnome-shell-extensions.gcampax.github.com',
-        'ding@rastersoft.com'
-        )
-    conflicting_extensions = (
-        'dash-to-dock@micxgx.gmail.com',
-        'vertical-overview@RensAlthuis.github.com',
-        'unite@hardpixel.eu',
-        'material-shell@papyelgringo',
-        'appindicatorsupport@rgcjonas.gmail.com',
-        'no-overview@fthx'
-        )
-
-    subprocess.run('gsettings set org.gnome.shell.extensions.dash-to-panel panel-element-positions \'{"0":[{"element":"showAppsButton","visible":false,"position":"stackedTL"},{"element":"activitiesButton","visible":false,"position":"stackedTL"},{"element":"leftBox","visible":true,"position":"stackedTL"},{"element":"taskbar","visible":true,"position":"stackedTL"},{"element":"centerBox","visible":true,"position":"stackedBR"},{"element":"rightBox","visible":true,"position":"stackedBR"},{"element":"dateMenu","visible":true,"position":"stackedBR"},{"element":"systemMenu","visible":true,"position":"stackedBR"},{"element":"desktopButton","visible":true,"position":"stackedBR"}]}\';\
-                gsettings set org.gnome.shell.extensions.dash-to-panel show-running-apps false;\
-                gsettings set org.gnome.shell.extensions.dash-to-panel panel-position TOP;\
-                gsettings set org.gnome.shell.extensions.dash-to-panel panel-size 32;\
-                gsettings set org.gnome.shell.extensions.arcmenu menu-button-appearance Text;\
-                gsettings set org.gnome.shell.extensions.arcmenu custom-menu-button-text " Applications";\
-                gsettings set org.gnome.shell.extensions.arcmenu arc-menu-placement DTP;\
-                gsettings set org.gnome.shell.extensions.arcmenu menu-layout Simple;\
-                gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"', shell=True)
-    for ext in conflicting_extensions:
-        if ext in enabled:
-            GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
-            print(f"disabled {ext}")
-    for ext in required_extensions:
-        if ext not in enabled:
-            GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
-            print(f"enabled {ext}")
-    horizontal_layout()
 
 def apply_material_shell():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
@@ -263,7 +133,6 @@ def apply_material_shell():
         'dash-to-panel@jderose9.github.com',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'dash-to-dock@micxgx.gmail.com',
-        'unite@hardpixel.eu',
         'arcmenu@arcmenu.com',
         'ding@rastersoft.com',
         'window-list@gnome-shell-extensions.gcampax.github.com',
@@ -280,12 +149,11 @@ def apply_material_shell():
             print(f"disabled {ext}")
     GLib.spawn_command_line_sync(f'gnome-extensions enable material-shell@papyelgringo')
     print(f"enabled material-shell@papyelgringo")
-    vertical_layout()
 
 def get_layouts():
-    return ({"id": "classic", "label": "Traditional", "x": 3, "y": 0},
-            {"id": "modern", "label": " Manjaro", "x": 2, "y": 0},
-            {"id": "material_shell", "label": " Tiling", "x": 2, "y": 3},
+    return ({"id": "traditional", "label": "Traditional", "x": 3, "y": 0},
+            {"id": "manjaro", "label": " Manjaro", "x": 2, "y": 0},
+            {"id": "material_shell", "label": " Material Shell", "x": 2, "y": 3},
             {"id": "gnome", "label": "Gnome", "x": 3, "y": 3},)
 
 def reload_gnome_shell():
@@ -293,7 +161,7 @@ def reload_gnome_shell():
     if running_wayland.returncode == 0:
         GLib.spawn_command_line_sync("gnome-session-quit --logout")
     else:
-        GLib.spawn_command_line_sync("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting Gnome...\")\'")
+        GLib.spawn_command_line_sync("busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell Eval s \'Meta.restart(\"Restarting GNOME...\")\'")
 
 
 def replace_in_file(file_name: str, regex: str, value: str):
@@ -364,29 +232,6 @@ def toggle_wayland():
         else:
             return False
 
-def enable_pop():
-    subprocess.run('gnome-extensions enable pop-shell@system76.com', shell=True)
-    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    if 'material-shell@papyelgringo' in enabled:
-        GLib.spawn_command_line_sync('gnome-extensions disable material-shell@papyelgringo')
-
-def disable_pop():
-    subprocess.run('gnome-extensions disable pop-shell@system76.com', shell=True)    
-
-def get_pop_state():
-    enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
-    if 'pop-shell@system76.com' in enabled:
-        return True
-    else:
-        return False
-
-def toggle_pop():
-    if get_pop_state():
-        disable_pop()
-    else:
-        enable_pop()
-
-
 def enable_firefox_theme():
     subprocess.run('firegnome-enable.sh', shell=True)
 
@@ -413,70 +258,33 @@ def get_extensions(chosen_layout):
         "manjaro": (
             "dash-to-dock@micxgx.gmail.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
-            "drive-menu@gnome-shell-extensions.gcampax.github.com",
-            "appindicatorsupport@rgcjonas.gmail.com",
-            "no-overview@fthx",
-            "vertical-overview@RensAlthuis.github.com"
+            "gnome-ui-tune@itstime.tech"
         ),
-        "classic": (
+        "traditional": (
             "dash-to-panel@jderose9.github.com",
             "user-theme@gnome-shell-extensions.gcampax.github.com",
             "appindicatorsupport@rgcjonas.gmail.com",
             "arcmenu@arcmenu.com",
             "no-overview@fthx"
         ),
-        "mate": (
-            "dash-to-panel@jderose9.github.com",
-            "user-theme@gnome-shell-extensions.gcampax.github.com",
-            "window-list@gnome-shell-extensions.gcampax.github.com",
-            "places-menu@gnome-shell-extensions.gcampax.github.com",
-            "appindicatorsupport@rgcjonas.gmail.com",
-            "arcmenu@arcmenu.com"
-        ),
-        "modern": (
-            "dash-to-dock@micxgx.gmail.com",
-            "user-theme@gnome-shell-extensions.gcampax.github.com",
-            "gnome-ui-tune@itstime.tech"
-        ),
-        "unity": (
-            "dash-to-dock@micxgx.gmail.com",
-            "user-theme@gnome-shell-extensions.gcampax.github.com",
-            "unite@hardpixel.eu", 
-            "arcmenu@arcmenu.com",
-            "vertical-overview@RensAlthuis.github.com"
-        ),
         "material_shell": (
             "material-shell@papyelgringo",
-            "user-theme@gnome-shell-extensions.gcampax.github.com",
-            "vertical-overview@RensAlthuis.github.com"
+            "user-theme@gnome-shell-extensions.gcampax.github.com"
         ),
         "gnome": (
-            "user-theme@gnome-shell-extensions.gcampax.github.com",
+            "user-theme@gnome-shell-extensions.gcampax.github.com"
         )
     }
     # List needed extension packages
     ext_pkgs = {
         "manjaro": ["gnome-shell-extension-dash-to-dock",
-                    "gnome-shell-extensions",
-                    "gnome-shell-extension-appindicator",
-                    "gnome-shell-extension-vertical-overview",
-                    "gnome-shell-extension-no-overview"],
-        "classic": ["gnome-shell-extension-dash-to-panel",
+                   "gnome-shell-extensions",
+                   "gnome-shell-extension-gnome-ui-tune"],
+        "traditional": ["gnome-shell-extension-dash-to-panel",
                     "gnome-shell-extensions",
                     "gnome-shell-extension-appindicator",
                     "gnome-shell-extension-arc-menu",
                     "gnome-shell-extension-no-overview"],
-        "mate": ["gnome-shell-extension-dash-to-panel",
-                    "gnome-shell-extensions",
-                    "gnome-shell-extension-appindicator",
-                    "gnome-shell-extension-arc-menu"],
-        "modern": ["gnome-shell-extension-dash-to-dock",
-                   "gnome-shell-extensions",
-                   "gnome-shell-extension-gnome-ui-tune"],
-        "unity": ["gnome-shell-extension-dash-to-dock",
-                   "gnome-shell-extensions",
-                   "gnome-shell-extension-unite",
-                   "gnome-shell-extension-arc-menu"],
         "material_shell": ["gnome-shell-extension-material-shell",
                    "gnome-shell-extensions"],
         "gnome": ["gnome-shell-extensions"]
@@ -550,7 +358,7 @@ class LayoutBox(Gtk.Box):
         self.wayland_active = None
 
         with UserConf() as conf:
-            self.layout = conf.read("layout", "modern")
+            self.layout = conf.read("layout", "manjaro")
             print("current layout:", self.layout)
 
         self.previews = {}
@@ -579,7 +387,7 @@ class LayoutBox(Gtk.Box):
         self.current_color = ""  # set colors from .css
         self.show_all()
         dirty_hack = self.layout
-        self.layout = "modern"
+        self.layout = "manjaro"
         self.previews[self.layout].get_parent().btn.set_active(True)
         try:
             self.previews[dirty_hack].get_parent().btn.set_active(True)
@@ -697,38 +505,6 @@ class LayoutBox(Gtk.Box):
         desk_label.set_markup("Desktop icons")
         desk_label.props.halign = Gtk.Align.START
 
-        # Automatic dark theme
-        dark_switch = Gtk.Switch()
-        dark_switch.props.valign = Gtk.Align.CENTER
-        dark_switch.props.halign = Gtk.Align.CENTER
-        dark_enabled = subprocess.run(
-            "gnome-extensions info nightthemeswitcher@romainvigier.fr | grep -q ENABLED", shell=True)
-        if dark_enabled.returncode == 0:
-            dark_switch.set_active(True)
-        else:
-            dark_switch.set_active(False)
-        dark_switch.connect("notify::active", self.on_dark_activated)
-        dark_label = Gtk.Label()
-        dark_label.set_markup("Automatic dark theme")
-        dark_label.props.halign = Gtk.Align.START
-
-        # Pop-shell
-        pop_switch = Gtk.Switch()
-        pop_switch.props.valign = Gtk.Align.CENTER
-        pop_switch.props.halign = Gtk.Align.CENTER
-        pop_enabled = subprocess.run(
-            "gnome-extensions info pop-shell@system76.com | grep -q ENABLED", shell=True)
-        if pop_enabled.returncode == 0:
-            pop_switch.set_active(True)
-        else:
-            pop_switch.set_active(False)
-
-        pop_switch.connect("notify::active", self.on_pop_activated)
-        pop_label = Gtk.Label()
-        pop_label.set_markup("Window Tiling (Pop-shell)")
-        pop_label.props.halign = Gtk.Align.START
-
-
         # Firefox theme
         ff_switch = Gtk.Switch()
         ff_switch.props.valign = Gtk.Align.CENTER
@@ -739,52 +515,43 @@ class LayoutBox(Gtk.Box):
             ff_switch.set_active(False)
         ff_switch.connect("notify::active", self.on_ff_activated)
         ff_label = Gtk.Label()
-        ff_label.set_markup("Gnome native firefox theme")
+        ff_label.set_markup("Firefox GNOME theme")
         ff_label.props.halign = Gtk.Align.START
 
-        # Gnome Tweaks
+        # GNOME Tweaks
         theme_button = Gtk.Button.new_with_label("Open")
         theme_button.connect("clicked", self.on_gnometweaks_activated)
         theme_button.props.valign = Gtk.Align.CENTER
         theme_button.props.halign = Gtk.Align.CENTER
         theme_label = Gtk.Label()
-        theme_label.set_markup("Gnome tweak tool")
+        theme_label.set_markup("GNOME Tweaks")
         theme_label.props.halign = Gtk.Align.START
 
-        # Gesture settings
-        # gesture_button = Gtk.Button.new_with_label("Open")
-        # gesture_button.connect("clicked", self.on_gest_activated)
-        # gesture_button.props.valign = Gtk.Align.CENTER
-        # gesture_button.props.halign = Gtk.Align.CENTER
-        # gesture_label = Gtk.Label()
-        # gesture_label.set_markup("Gesture settings")
-        # gesture_label.props.halign = Gtk.Align.START
-
-        # Gnome Extensions
+        # GNOME Extensions
         ext_button = Gtk.Button.new_with_label("Open")
         ext_button.connect("clicked", self.on_gnomext_activated)
         ext_button.props.valign = Gtk.Align.CENTER
         ext_button.props.halign = Gtk.Align.CENTER
         ext_label = Gtk.Label()
-        ext_label.set_markup("Gnome extensions")
+        ext_label.set_markup("GNOME Extensions")
         ext_label.props.halign = Gtk.Align.START
         
-        # Dynamic wallpaper
+        # Dynamic Wallpaper Editor
         dynapaper_button = Gtk.Button.new_with_label("Open")
         dynapaper_button.connect("clicked", self.on_dynapaper_activated)
         dynapaper_button.props.valign = Gtk.Align.CENTER
         dynapaper_button.props.halign = Gtk.Align.CENTER
         dynapaper_label = Gtk.Label()
-        dynapaper_label.set_markup("Dynamic wallpaper")
+        dynapaper_label.set_markup("Dynamic Wallpaper Editor")
         dynapaper_label.props.halign = Gtk.Align.START
 
-        # Gnome online accounts
+        # GNOME Online Accounts
         goa_button = Gtk.Button.new_with_label("Open")
         goa_button.connect("clicked", self.on_goa_activated)
         goa_button.props.valign = Gtk.Align.CENTER
         goa_button.props.halign = Gtk.Align.CENTER
         goa_label = Gtk.Label()
-        goa_label.set_markup("Online accounts")
+        goa_label.set_markup("GNOME Online Accounts")
         goa_label.props.halign = Gtk.Align.START
 
         # Theme tab layout
@@ -931,24 +698,6 @@ class LayoutBox(Gtk.Box):
             subprocess.run("gnome-extensions disable ding@rastersoft.com", shell=True)
         print("Desktop icons was turned", state)
 
-    def on_dark_activated(self, switch, gparam):
-        if switch.get_active():
-            state = "on"
-            subprocess.run("gnome-extensions enable nightthemeswitcher@romainvigier.fr", shell=True)
-        else:
-            state = "off"
-            subprocess.run("gnome-extensions disable nightthemeswitcher@romainvigier.fr", shell=True)
-        print("Automatic dark theme was turned", state)
-
-    def on_pop_activated(self, switch, gparam):
-        if switch.get_active():
-            state = "on"
-            enable_pop()
-        else:
-            state = "off"
-            disable_pop()
-        print("Pop-shell was turned", state)
-
     def on_ff_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
@@ -1018,9 +767,6 @@ class LayoutBox(Gtk.Box):
 
     def on_gnomext_activated(self, button):
         subprocess.Popen("gnome-shell-extension-prefs")
-
-    #def on_gest_activated(self, button):
-    #    subprocess.Popen("gestures")
 
     def on_goa_activated(self, button):
         subprocess.Popen("gnome-control-center online-accounts", shell=True)

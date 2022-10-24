@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='layoutswitcherlib',
-    version='0.8.27',
+    version='0.8.28',
     description='Gnome Layout Switcher',
     url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
     download_url='https://gitlab.manjaro.org/Chrysostomus/gnome-layout-switcher',
@@ -29,16 +29,12 @@ setup(
          ]),
         ('share/gls/pictures',[
             'data/pictures/gnomepreview.svg',
-            'data/pictures/modernpreview.svg',
             'data/pictures/manjaropreview.svg',
-            'data/pictures/matepreview.svg',
             'data/pictures/material_shellpreview.svg',
-            'data/pictures/unitypreview.svg',
-            'data/pictures/classicpreview.svg',
+            'data/pictures/traditionalpreview.svg',
          ]),
         ('share/gls/schemas',[
-            'data/schemas/classic_layout',
-            'data/schemas/unity_layout',
+            'data/schemas/traditional_layout',
          ]),
         ('share/gtk-3.0',[
             'data/css/gtk.css',
@@ -49,10 +45,5 @@ setup(
         ('share/applications',[
             'data/desktop/gnome-layouts.desktop',
          ]),
-
-        # not used in this branch
-        #('share/polkit-1/actions/',[
-        #    'data/org.manjaro.org.gnomelayoutswitcher.policy',
-        # ]),
      ]
 )
