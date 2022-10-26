@@ -536,13 +536,13 @@ class LayoutBox(Gtk.Box):
         ext_label.set_markup("GNOME Extensions")
         ext_label.props.halign = Gtk.Align.START
         
-        # Dynamic Wallpaper Editor
+        # Dynamic Wallpaper Creator
         dynapaper_button = Gtk.Button.new_with_label("Open")
         dynapaper_button.connect("clicked", self.on_dynapaper_activated)
         dynapaper_button.props.valign = Gtk.Align.CENTER
         dynapaper_button.props.halign = Gtk.Align.CENTER
         dynapaper_label = Gtk.Label()
-        dynapaper_label.set_markup("Dynamic Wallpaper Editor")
+        dynapaper_label.set_markup("Dynamic Wallpaper Creator")
         dynapaper_label.props.halign = Gtk.Align.START
 
         # Gradience
@@ -772,7 +772,7 @@ class LayoutBox(Gtk.Box):
         subprocess.Popen("gradience", shell=True)
 
     def on_dynapaper_activated(self, button):
-        subprocess.Popen("dynamic-wallpaper-editor", shell=True)
+        subprocess.Popen("dynamic-wallpaper", shell=True)
 
     def on_click_img(self, box, event):
         """Make images clickable
