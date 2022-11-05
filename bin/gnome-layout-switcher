@@ -4,7 +4,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 from pathlib import Path
-from layoutswitcherlib.layoutsbox import LayoutBox
+from layoutswitcherlib.layoutsbox import LayoutBox, Command
 
 
 class HeaderBarWindow(Gtk.Window):
@@ -41,7 +41,10 @@ class HeaderBarWindow(Gtk.Window):
         Gtk.main_quit()
 
 
-# Show the window
-win = HeaderBarWindow()
-win.show_all()
-Gtk.main()
+if len(sys.argv) == 1:
+    # Show the window
+    win = HeaderBarWindow()
+    win.show_all()
+    Gtk.main()
+else:
+    Command.cli()
