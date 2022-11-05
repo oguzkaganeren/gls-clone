@@ -12,6 +12,7 @@ import tempfile
 import atexit
 from .config import UserConf
 from glob import glob
+import click
 
 # Define the path to css file
 css_file = Path("~/.config/gtk-3.0/gtk.css").expanduser()
@@ -37,6 +38,7 @@ def rm_tmp_dir():
 
 atexit.register(rm_tmp_dir)
 
+@click.command(help="Apply traditional layout")
 def apply_traditional():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
@@ -75,6 +77,7 @@ def apply_traditional():
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
 
+@click.command(help="Apply manjaro layout")
 def apply_manjaro():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = (
@@ -104,6 +107,7 @@ def apply_manjaro():
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
 
+@click.command(help="Apply gnome layout")
 def apply_gnome():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     conflicting_extensions = (
@@ -125,6 +129,7 @@ def apply_gnome():
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
 
+@click.command(help="Apply material shell layout")
 def apply_material_shell():
     enabled = subprocess.getoutput('gsettings get org.gnome.shell enabled-extensions')
     required_extensions = ('material-shell@papyelgringo',
@@ -156,6 +161,7 @@ def get_layouts():
             {"id": "material_shell", "label": " Material Shell", "x": 2, "y": 3},
             {"id": "gnome", "label": "GNOME", "x": 3, "y": 3},)
 
+@click.command(help="Reload gnome shell")
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
     if running_wayland.returncode == 0:
@@ -196,7 +202,7 @@ def shell(commands) -> tuple:
             return False, str(err)
     return True, ""
 
-
+@click.command(help="Enable wayland")
 def enable_wayland():
     wayland_success = subprocess.run("pkexec sed -i 's/^WaylandEnable=false/#WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
     if wayland_success.returncode == 0:
@@ -204,6 +210,7 @@ def enable_wayland():
     else:
         return False
 
+@click.command(help="Disable wayland")
 def disable_wayland():
     wayland_success = subprocess.run("pkexec sed -i 's/^#WaylandEnable=false/WaylandEnable=false/' /etc/gdm/custom.conf", shell=True)
     if wayland_success.returncode == 0:
@@ -822,3 +829,16 @@ class LayoutBox(Gtk.Box):
                 self.layout = conf.write({"layout": self.layout})
                 print("Layout applied")
         self.layout = saving
+
+class Command(Gtk.Box):
+    
+    @click.group()
+    def cli():
+        pass
+
+    cli.add_command(apply_traditional)
+    cli.add_command(apply_manjaro)
+    cli.add_command(apply_gnome)
+    cli.add_command(apply_material_shell)
+    cli.add_command(enable_wayland)
+    cli.add_command(disable_wayland)
