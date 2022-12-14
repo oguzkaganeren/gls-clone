@@ -45,7 +45,7 @@ def apply_traditional():
         'dash-to-panel@jderose9.github.com',
         'arcmenu@arcmenu.com',
         'appindicatorsupport@rgcjonas.gmail.com',
-        'ding@rastersoft.com',
+        'gtk4-ding@smedius.gitlab.com',
         'no-overview@fthx'
         )
     conflicting_extensions = (
@@ -113,7 +113,7 @@ def apply_gnome():
     conflicting_extensions = (
         'dash-to-dock@micxgx.gmail.com',
         'arcmenu@arcmenu.com',
-        'ding@rastersoft.com',
+        'gtk4-ding@smedius.gitlab.com',
         'dash-to-panel@jderose9.github.com',
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'material-shell@papyelgringo',
@@ -123,7 +123,7 @@ def apply_gnome():
         )
 
     GLib.spawn_command_line_sync('gsettings set org.gnome.desktop.wm.preferences button-layout ":minimize,maximize,close"')
-    
+
     for ext in conflicting_extensions:
         if ext in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
@@ -139,7 +139,7 @@ def apply_material_shell():
         'places-menu@gnome-shell-extensions.gcampax.github.com',
         'dash-to-dock@micxgx.gmail.com',
         'arcmenu@arcmenu.com',
-        'ding@rastersoft.com',
+        'gtk4-ding@smedius.gitlab.com',
         'window-list@gnome-shell-extensions.gcampax.github.com',
         'appindicatorsupport@rgcjonas.gmail.com',
         'pop-shell@system76.com',
@@ -244,7 +244,7 @@ def enable_firefox_theme():
 
 def disable_firefox_theme():
     subprocess.run('rm -rf ~/.mozilla/firefox/*.default-release/chrome/', shell=True)
-    subprocess.run('rm -rf ~/.config/autostart/firefox-theme.desktop', shell=True)    
+    subprocess.run('rm -rf ~/.config/autostart/firefox-theme.desktop', shell=True)
 
 def get_firefox_theme_state():
     firefox_theme_state = False
@@ -482,7 +482,7 @@ class LayoutBox(Gtk.Box):
         self.wayland_active = get_wayland_state()
         wayland_switch.set_active(self.wayland_active)
         self.wayland_handler_id = wayland_switch.connect("notify::active", self.on_wayland_activated)
-        # System tray 
+        # System tray
         tray_switch = Gtk.Switch()
         tray_switch.props.valign = Gtk.Align.CENTER
         tray_switch.props.halign = Gtk.Align.CENTER
@@ -502,7 +502,7 @@ class LayoutBox(Gtk.Box):
         desk_switch.props.valign = Gtk.Align.CENTER
         desk_switch.props.halign = Gtk.Align.CENTER
         desk_enabled = subprocess.run(
-            "gnome-extensions info ding@rastersoft.com | grep -q ENABLED", shell=True)
+            "gnome-extensions info gtk4-ding@smedius.gitlab.com | grep -q ENABLED", shell=True)
         if desk_enabled.returncode == 0:
             desk_switch.set_active(True)
         else:
@@ -542,7 +542,7 @@ class LayoutBox(Gtk.Box):
         ext_label = Gtk.Label()
         ext_label.set_markup("GNOME Extensions")
         ext_label.props.halign = Gtk.Align.START
-        
+
         # Dynamic Wallpaper Creator
         dynapaper_button = Gtk.Button.new_with_label("Open")
         dynapaper_button.connect("clicked", self.on_dynapaper_activated)
@@ -699,10 +699,10 @@ class LayoutBox(Gtk.Box):
     def on_desk_activated(self, switch, gparam):
         if switch.get_active():
             state = "on"
-            subprocess.run("gnome-extensions enable ding@rastersoft.com", shell=True)
+            subprocess.run("gnome-extensions enable gtk4-ding@smedius.gitlab.com", shell=True)
         else:
             state = "off"
-            subprocess.run("gnome-extensions disable ding@rastersoft.com", shell=True)
+            subprocess.run("gnome-extensions disable gtk4-ding@smedius.gitlab.com", shell=True)
         print("Desktop icons was turned", state)
 
     def on_ff_activated(self, switch, gparam):
@@ -831,7 +831,7 @@ class LayoutBox(Gtk.Box):
         self.layout = saving
 
 class Command(Gtk.Box):
-    
+
     @click.group()
     def cli():
         pass
