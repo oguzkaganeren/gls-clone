@@ -809,7 +809,7 @@ class LayoutBox(Gtk.Box):
         good = True
         err = None
 
-        switch_layout = f"apply_{self.layout}()"
+        switch_layout = f"apply_{self.layout}(standalone_mode=False)"
         eval(switch_layout)
         shell('gsettings set org.gnome.shell disable-user-extensions false')
         saving = self.layout
