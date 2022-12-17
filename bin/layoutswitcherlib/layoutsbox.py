@@ -76,6 +76,7 @@ def apply_traditional():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    save_layout_conf("traditional")
 
 @click.command(help="Apply manjaro layout")
 def apply_manjaro():
@@ -106,6 +107,7 @@ def apply_manjaro():
         if ext not in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions enable {ext}')
             print(f"enabled {ext}")
+    save_layout_conf("manjaro")
 
 @click.command(help="Apply gnome layout")
 def apply_gnome():
@@ -128,6 +130,7 @@ def apply_gnome():
         if ext in enabled:
             GLib.spawn_command_line_sync(f'gnome-extensions disable {ext}')
             print(f"disabled {ext}")
+    save_layout_conf("gnome")
 
 @click.command(help="Apply material shell layout")
 def apply_material_shell():
@@ -154,6 +157,7 @@ def apply_material_shell():
             print(f"disabled {ext}")
     GLib.spawn_command_line_sync(f'gnome-extensions enable material-shell@papyelgringo')
     print(f"enabled material-shell@papyelgringo")
+    save_layout_conf("material-shell")
 
 def get_layouts():
     return ({"id": "traditional", "label": "Traditional", "x": 3, "y": 0},
@@ -164,6 +168,7 @@ def get_layouts():
 @click.command(help="Reload gnome shell")
 def reload_gnome_shell():
     running_wayland = subprocess.run("pgrep Xwayland", shell=True)
+    print(running_wayland)
     if running_wayland.returncode == 0:
         GLib.spawn_command_line_sync("gnome-session-quit --logout")
     else:
@@ -181,6 +186,10 @@ def replace_in_file(file_name: str, regex: str, value: str):
             file_write.write(re.sub(pattern, value, line))
     Path(file_old).unlink()
 
+def save_layout_conf(name):
+    with UserConf() as conf:
+        conf.write({"layout": name})
+        print("Layout applied")
 
 def shell(commands) -> tuple:
     """return true if command return 0 AND error message"""
@@ -800,35 +809,14 @@ class LayoutBox(Gtk.Box):
         dialog.destroy()
 
     def on_reload_clicked(self, button):
-        reload_gnome_shell()
+        reload_gnome_shell(standalone_mode=False)
 
     def on_layoutapply_clicked(self, button):
         """ apply defaut layout to user """
-        #get_extensions(self.layout)
-        ret = True
-        good = True
-        err = None
 
         switch_layout = f"apply_{self.layout}(standalone_mode=False)"
         eval(switch_layout)
         shell('gsettings set org.gnome.shell disable-user-extensions false')
-        saving = self.layout
-        with UserConf() as conf:
-            old_layout = conf.read("layout", "manjaro")
-            # if old_layout == "material_shell":
-                # reload_gnome_shell()
-
-        if not good:
-            # here we continue commands ... good idea ??
-            ret = False
-        if not ret:
-            self.dialog_error(f"Error for set layout \"{self.layout}\"", err)
-        else:
-            # save only if not one error
-            with UserConf() as conf:
-                self.layout = conf.write({"layout": self.layout})
-                print("Layout applied")
-        self.layout = saving
 
 class Command(Gtk.Box):
 
